@@ -1,7 +1,6 @@
 import { HeroUIProvider } from "@heroui/react"
 import { DEFAULT_AUTO_APPROVAL_SETTINGS } from "@shared/AutoApprovalSettings"
 import { type ApiConfiguration, bedrockModels } from "@shared/api"
-import { CLINE_ONBOARDING_MODELS } from "@shared/cline/onboarding"
 import type { ClineMessage, ClineSayTool } from "@shared/ExtensionMessage"
 import type { HistoryItem } from "@shared/HistoryItem"
 import type { Meta, StoryObj } from "@storybook/react-vite"
@@ -9,21 +8,16 @@ import { useEffect, useMemo, useState } from "react"
 import { expect, userEvent, within } from "storybook/test"
 import { ExtensionStateContext, useExtensionState } from "@/context/ExtensionStateContext"
 import ChatView from "./components/chat/ChatView"
-import OnboardingView from "./components/onboarding/OnboardingView"
 import WelcomeView from "./components/welcome/WelcomeView"
 
 // Mock component that mimics App behavior but works in Storybook
 const MockApp = () => {
-	const { showWelcome, onboardingModels, showAnnouncement } = useExtensionState()
+	const { showWelcome, showAnnouncement } = useExtensionState()
 
 	return (
 		<HeroUIProvider>
 			{showWelcome ? (
-				onboardingModels ? (
-					<OnboardingView onboardingModels={onboardingModels} />
-				) : (
-					<WelcomeView />
-				)
+				<WelcomeView />
 			) : (
 				<ChatView
 					hideAnnouncement={() => {}}
@@ -298,7 +292,7 @@ export const Onboarding: Story = {
 			welcomeViewCompleted: false,
 			showWelcome: true,
 			clineMessages: [],
-			onboardingModels: { models: CLINE_ONBOARDING_MODELS },
+			onboardingModels: undefined,
 		}),
 	],
 	parameters: {
@@ -309,7 +303,7 @@ export const Onboarding: Story = {
 		},
 	},
 	args: {
-		onboardingModels: { models: CLINE_ONBOARDING_MODELS },
+		onboardingModels: undefined,
 	},
 	argTypes: {
 		onboardingModels: {

@@ -1,28 +1,18 @@
-import { BooleanRequest, EmptyRequest } from "@shared/proto/cline/common"
+import { BooleanRequest } from "@shared/proto/cline/common"
 import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { memo, useEffect, useState } from "react"
 import ClineLogoWhite from "@/assets/ClineLogoWhite"
 import ApiOptions from "@/components/settings/ApiOptions"
 import { useExtensionState } from "@/context/ExtensionStateContext"
-import { AccountServiceClient, StateServiceClient } from "@/services/grpc-client"
+import { StateServiceClient } from "@/services/grpc-client"
 import { validateApiConfiguration } from "@/utils/validate"
 
 const WelcomeView = memo(() => {
 	const { apiConfiguration, mode } = useExtensionState()
 	const [apiErrorMessage, setApiErrorMessage] = useState<string | undefined>(undefined)
 	const [showApiOptions, setShowApiOptions] = useState(false)
-	const [isLoading, setIsLoading] = useState(false)
 
 	const disableLetsGoButton = apiErrorMessage != null
-
-	const handleLogin = () => {
-		setIsLoading(true)
-		AccountServiceClient.accountLoginClicked(EmptyRequest.create())
-			.catch((err) => console.error("Failed to get login URL:", err))
-			.finally(() => {
-				setIsLoading(false)
-			})
-	}
 
 	const handleSubmit = async () => {
 		try {
@@ -53,26 +43,11 @@ const WelcomeView = memo(() => {
 					create new tools and extend my own capabilities.
 				</p>
 
-				<p className="text-(--vscode-descriptionForeground)">
-					Sign up for an account to get started for free, or use an API key that provides access to models like Claude
-					Sonnet.
-				</p>
-
-				<VSCodeButton appearance="primary" className="w-full mt-1" disabled={isLoading} onClick={handleLogin}>
-					Get Started for Free
-					{isLoading && (
-						<span className="ml-1 animate-spin">
-							<span className="codicon codicon-refresh" />
-						</span>
-					)}
-				</VSCodeButton>
+				<p className="text-(--vscode-descriptionForeground)">Configure an API key to get started.</p>
 
 				{!showApiOptions && (
-					<VSCodeButton
-						appearance="secondary"
-						className="mt-2.5 w-full"
-						onClick={() => setShowApiOptions(!showApiOptions)}>
-						Use your own API key
+					<VSCodeButton appearance="primary" className="mt-2.5 w-full" onClick={() => setShowApiOptions(true)}>
+						Configure API Key
 					</VSCodeButton>
 				)}
 

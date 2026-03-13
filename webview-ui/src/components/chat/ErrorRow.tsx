@@ -1,8 +1,6 @@
 import { ClineMessage } from "@shared/ExtensionMessage"
 import { memo } from "react"
 import CreditLimitError from "@/components/chat/CreditLimitError"
-import { Button } from "@/components/ui/button"
-import { useClineAuth, useClineSignIn } from "@/context/ClineAuthContext"
 import { ClineError, ClineErrorType } from "../../../../src/services/error/ClineError"
 
 const _errorColor = "var(--vscode-errorForeground)"
@@ -15,10 +13,7 @@ interface ErrorRowProps {
 }
 
 const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStreamingFailedMessage }: ErrorRowProps) => {
-	const { clineUser } = useClineAuth()
 	const rawApiError = apiRequestFailedMessage || apiReqStreamingFailedMessage
-
-	const { isLoginLoading, handleSignIn } = useClineSignIn()
 
 	const renderErrorContent = () => {
 		switch (errorType) {
@@ -31,7 +26,6 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 					const errorMessage = clineError?._error?.message || clineError?.message || rawApiError
 					const requestId = clineError?._error?.request_id
 					const providerId = clineError?.providerId || clineError?._error?.providerId
-					const isClineProvider = providerId === "cline"
 					const errorCode = clineError?._error?.code
 
 					if (clineError?.isErrorType(ClineErrorType.Balance)) {
@@ -83,21 +77,8 @@ const ErrorRow = memo(({ message, errorType, apiRequestFailedMessage, apiReqStre
 							{/* Display raw API error if different from parsed error message */}
 							{errorMessage !== rawApiError && <div>{rawApiError}</div>}
 
-							{/* Display Login button for non-logged in users using the Cline provider */}
 							<div>
-								{/* The user is signed in or not using cline provider */}
-								{isClineProvider && !clineUser ? (
-									<Button className="w-full mb-4" disabled={isLoginLoading} onClick={handleSignIn}>
-										Sign in to Cline
-										{isLoginLoading && (
-											<span className="ml-1 animate-spin">
-												<span className="codicon codicon-refresh"></span>
-											</span>
-										)}
-									</Button>
-								) : (
-									<span className="mb-4 text-description">(Click "Retry" below)</span>
-								)}
+								<span className="mb-4 text-description">(Click "Retry" below)</span>
 							</div>
 						</p>
 					)

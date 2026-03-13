@@ -57,8 +57,6 @@ export interface ExtensionStateContextType extends ExtensionState {
 	settingsTargetSection?: string
 	settingsInitialModelTab?: "recommended" | "free"
 	showHistory: boolean
-	showAccount: boolean
-	showWorktrees: boolean
 	showAnnouncement: boolean
 	expandTaskHeader: boolean
 
@@ -104,15 +102,11 @@ export interface ExtensionStateContextType extends ExtensionState {
 	navigateToSettings: (targetSection?: string) => void
 	navigateToSettingsModelPicker: (opts: { targetSection?: string; initialModelTab?: "recommended" | "free" }) => void
 	navigateToHistory: () => void
-	navigateToAccount: () => void
-	navigateToWorktrees: () => void
 	navigateToChat: () => void
 
 	// Hide functions
 	hideSettings: () => void
 	hideHistory: () => void
-	hideAccount: () => void
-	hideWorktrees: () => void
 	hideAnnouncement: () => void
 	closeMcpView: () => void
 
@@ -132,8 +126,6 @@ export const ExtensionStateContextProvider: React.FC<{
 	const [settingsTargetSection, setSettingsTargetSection] = useState<string | undefined>(undefined)
 	const [settingsInitialModelTab, setSettingsInitialModelTab] = useState<"recommended" | "free" | undefined>(undefined)
 	const [showHistory, setShowHistory] = useState(false)
-	const [showAccount, setShowAccount] = useState(false)
-	const [showWorktrees, setShowWorktrees] = useState(false)
 	const [showAnnouncement, setShowAnnouncement] = useState(false)
 
 	// Helper for MCP view
@@ -149,8 +141,6 @@ export const ExtensionStateContextProvider: React.FC<{
 		setSettingsInitialModelTab(undefined)
 	}, [])
 	const hideHistory = useCallback(() => setShowHistory(false), [setShowHistory])
-	const hideAccount = useCallback(() => setShowAccount(false), [setShowAccount])
-	const hideWorktrees = useCallback(() => setShowWorktrees(false), [setShowWorktrees])
 	const hideAnnouncement = useCallback(() => setShowAnnouncement(false), [setShowAnnouncement])
 
 	// Navigation functions
@@ -158,22 +148,18 @@ export const ExtensionStateContextProvider: React.FC<{
 		(tab?: McpViewTab) => {
 			setShowSettings(false)
 			setShowHistory(false)
-			setShowAccount(false)
-			setShowWorktrees(false)
 			if (tab) {
 				setMcpTab(tab)
 			}
 			setShowMcp(true)
 		},
-		[setShowMcp, setMcpTab, setShowSettings, setShowHistory, setShowAccount, setShowWorktrees],
+		[setShowMcp, setMcpTab, setShowSettings, setShowHistory],
 	)
 
 	const navigateToSettings = useCallback(
 		(targetSection?: string) => {
 			setShowHistory(false)
 			closeMcpView()
-			setShowAccount(false)
-			setShowWorktrees(false)
 			setSettingsTargetSection(targetSection)
 			setSettingsInitialModelTab(undefined)
 			setShowSettings(true)
@@ -185,8 +171,6 @@ export const ExtensionStateContextProvider: React.FC<{
 		(opts: { targetSection?: string; initialModelTab?: "recommended" | "free" }) => {
 			setShowHistory(false)
 			closeMcpView()
-			setShowAccount(false)
-			setShowWorktrees(false)
 			setSettingsTargetSection(opts.targetSection)
 			setSettingsInitialModelTab(opts.initialModelTab)
 			setShowSettings(true)
@@ -197,34 +181,14 @@ export const ExtensionStateContextProvider: React.FC<{
 	const navigateToHistory = useCallback(() => {
 		setShowSettings(false)
 		closeMcpView()
-		setShowAccount(false)
-		setShowWorktrees(false)
 		setShowHistory(true)
-	}, [setShowSettings, closeMcpView, setShowAccount, setShowWorktrees, setShowHistory])
-
-	const navigateToAccount = useCallback(() => {
-		setShowSettings(false)
-		closeMcpView()
-		setShowHistory(false)
-		setShowWorktrees(false)
-		setShowAccount(true)
-	}, [setShowSettings, closeMcpView, setShowHistory, setShowWorktrees, setShowAccount])
-
-	const navigateToWorktrees = useCallback(() => {
-		setShowSettings(false)
-		closeMcpView()
-		setShowHistory(false)
-		setShowAccount(false)
-		setShowWorktrees(true)
-	}, [setShowSettings, closeMcpView, setShowHistory, setShowAccount, setShowWorktrees])
+	}, [setShowSettings, closeMcpView, setShowHistory])
 
 	const navigateToChat = useCallback(() => {
 		setShowSettings(false)
 		closeMcpView()
 		setShowHistory(false)
-		setShowAccount(false)
-		setShowWorktrees(false)
-	}, [setShowSettings, closeMcpView, setShowHistory, setShowAccount, setShowWorktrees])
+	}, [setShowSettings, closeMcpView, setShowHistory])
 
 	const [state, setState] = useState<ExtensionState>({
 		version: "",
@@ -326,9 +290,7 @@ export const ExtensionStateContextProvider: React.FC<{
 	const mcpButtonUnsubscribeRef = useRef<(() => void) | null>(null)
 	const historyButtonClickedSubscriptionRef = useRef<(() => void) | null>(null)
 	const chatButtonUnsubscribeRef = useRef<(() => void) | null>(null)
-	const accountButtonClickedSubscriptionRef = useRef<(() => void) | null>(null)
 	const settingsButtonClickedSubscriptionRef = useRef<(() => void) | null>(null)
-	const worktreesButtonClickedSubscriptionRef = useRef<(() => void) | null>(null)
 	const partialMessageUnsubscribeRef = useRef<(() => void) | null>(null)
 	const mcpMarketplaceUnsubscribeRef = useRef<(() => void) | null>(null)
 	const openRouterModelsUnsubscribeRef = useRef<(() => void) | null>(null)
@@ -484,23 +446,6 @@ export const ExtensionStateContextProvider: React.FC<{
 			},
 		})
 
-		// Set up worktrees button clicked subscription
-		worktreesButtonClickedSubscriptionRef.current = UiServiceClient.subscribeToWorktreesButtonClicked(
-			EmptyRequest.create({}),
-			{
-				onResponse: () => {
-					// When worktrees button is clicked, navigate to worktrees
-					navigateToWorktrees()
-				},
-				onError: (error) => {
-					console.error("Error in worktrees button clicked subscription:", error)
-				},
-				onComplete: () => {
-					console.log("Worktrees button clicked subscription completed")
-				},
-			},
-		)
-
 		// Subscribe to partial message events
 		partialMessageUnsubscribeRef.current = UiServiceClient.subscribeToPartialMessage(EmptyRequest.create({}), {
 			onResponse: (protoMessage) => {
@@ -588,21 +533,6 @@ export const ExtensionStateContextProvider: React.FC<{
 				console.error("Failed to initialize webview via gRPC:", error)
 			})
 
-		// Set up account button clicked subscription
-		accountButtonClickedSubscriptionRef.current = UiServiceClient.subscribeToAccountButtonClicked(EmptyRequest.create(), {
-			onResponse: () => {
-				// When account button is clicked, navigate to account view
-				console.log("[DEBUG] Received account button clicked event from gRPC stream")
-				navigateToAccount()
-			},
-			onError: (error) => {
-				console.error("Error in account button clicked subscription:", error)
-			},
-			onComplete: () => {
-				console.log("Account button clicked subscription completed")
-			},
-		})
-
 		// Fetch available terminal profiles on launch
 		StateServiceClient.getAvailableTerminalProfiles(EmptyRequest.create({}))
 			.then((response) => {
@@ -644,17 +574,9 @@ export const ExtensionStateContextProvider: React.FC<{
 				chatButtonUnsubscribeRef.current()
 				chatButtonUnsubscribeRef.current = null
 			}
-			if (accountButtonClickedSubscriptionRef.current) {
-				accountButtonClickedSubscriptionRef.current()
-				accountButtonClickedSubscriptionRef.current = null
-			}
 			if (settingsButtonClickedSubscriptionRef.current) {
 				settingsButtonClickedSubscriptionRef.current()
 				settingsButtonClickedSubscriptionRef.current = null
-			}
-			if (worktreesButtonClickedSubscriptionRef.current) {
-				worktreesButtonClickedSubscriptionRef.current()
-				worktreesButtonClickedSubscriptionRef.current = null
 			}
 			if (partialMessageUnsubscribeRef.current) {
 				partialMessageUnsubscribeRef.current()
@@ -806,8 +728,6 @@ export const ExtensionStateContextProvider: React.FC<{
 		settingsTargetSection,
 		settingsInitialModelTab,
 		showHistory,
-		showAccount,
-		showWorktrees,
 		showAnnouncement,
 		globalClineRulesToggles: state.globalClineRulesToggles || {},
 		localClineRulesToggles: state.localClineRulesToggles || {},
@@ -826,15 +746,11 @@ export const ExtensionStateContextProvider: React.FC<{
 		navigateToSettings,
 		navigateToSettingsModelPicker,
 		navigateToHistory,
-		navigateToAccount,
-		navigateToWorktrees,
 		navigateToChat,
 
 		// Hide functions
 		hideSettings,
 		hideHistory,
-		hideAccount,
-		hideWorktrees,
 		hideAnnouncement,
 		setShowAnnouncement,
 		setShowWelcome,
