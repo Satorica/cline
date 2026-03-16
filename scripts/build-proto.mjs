@@ -12,7 +12,8 @@ import { main as generateHostBridgeClient } from "./generate-host-bridge-client.
 import { main as generateProtoBusSetup } from "./generate-protobus-setup.mjs"
 
 const require = createRequire(import.meta.url)
-const PROTOC = path.join(require.resolve("grpc-tools"), "../bin/protoc")
+const GRPC_TOOLS_PROTOC = path.join(require.resolve("grpc-tools"), "../bin/protoc")
+const PROTOC = resolveProtoc()
 
 const PROTO_DIR = path.resolve("proto")
 const TS_OUT_DIR = path.resolve("src/shared/proto")
@@ -33,6 +34,16 @@ const TS_PROTO_OPTIONS = [
 	"useOptionals=none", // scalar and message fields are required unless they are marked as optional.
 	"useDate=false", // Timestamp fields will not be automatically converted to Date.
 ]
+
+function resolveProtoc() {
+	try {
+		execSync(`"${GRPC_TOOLS_PROTOC}" --version`, { stdio: "ignore" })
+		return GRPC_TOOLS_PROTOC
+	} catch (_error) {
+		console.log(chalk.yellow("grpc-tools protoc is not runnable. Falling back to system protoc from PATH."))
+		return "protoc"
+	}
+}
 
 async function main() {
 	await cleanup()
