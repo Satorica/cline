@@ -119,8 +119,6 @@ async function cleanup() {
 	await rmrf("src/generated")
 
 	// Clean up generated files that were moved.
-	await rmrf("src/standalone/services/host-grpc-client.ts")
-	await rmrf("src/standalone/server-setup.ts")
 	await rmrf("src/hosts/vscode/host-grpc-service-config.ts")
 	await rmrf("src/core/controller/grpc-service-config.ts")
 	const oldhostbridgefiles = [

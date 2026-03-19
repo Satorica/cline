@@ -7,9 +7,7 @@ import { getFqn, loadServicesFromProtoDescriptor } from "./proto-utils.mjs"
 
 // Contains the interface definitions for the host bridge clients.
 const TYPES_FILE = path.resolve("src/generated/hosts/host-bridge-client-types.ts")
-// Contains the ExternalHostBridgeClientManager for the external host bridge clients (using nice-grpc).
-const EXTERNAL_CLIENT_FILE = path.resolve("src/generated/hosts/standalone/host-bridge-clients.ts")
-// Contains the handler map for the external host bridge clients (using the custom service registry).
+// Contains the handler map for the VSCode host bridge clients (using the custom service registry).
 const VSCODE_CLIENT_FILE = path.resolve("src/generated/hosts/vscode/hostbridge-grpc-service-config.ts")
 
 /**
@@ -19,12 +17,10 @@ export async function main() {
 	const { hostServices } = await loadServicesFromProtoDescriptor()
 
 	await generateTypesFile(hostServices)
-	await generateExternalClientFile(hostServices)
 	await generateVscodeClientFile(hostServices)
 
 	console.log(`Generated Host Bridge client files at:`)
 	console.log(`- ${TYPES_FILE}`)
-	console.log(`- ${EXTERNAL_CLIENT_FILE}`)
 	console.log(`- ${VSCODE_CLIENT_FILE}`)
 }
 
@@ -78,9 +74,9 @@ ${methods}
 }
 
 /**
- * Generate the external client implementations file.
+ * @deprecated Removed - standalone/external clients no longer needed
  */
-async function generateExternalClientFile(hostServices) {
+async function generateExternalClientFile_UNUSED(hostServices) {
 	// Generate imports
 	const imports = []
 	// Add imports for the interfaces
@@ -110,9 +106,9 @@ ${clientImplementations.join("\n\n")}
 }
 
 /**
- * Generate a client implementation class for a service
+ * @deprecated Removed - standalone/external clients no longer needed
  */
-function generateExternalClientSetup(serviceName, serviceDefinition) {
+function generateExternalClientSetup_UNUSED(serviceName, serviceDefinition) {
 	// Get the methods from the service definition
 	const methods = Object.entries(serviceDefinition.service)
 		.map(([methodName, methodDef]) => {
@@ -125,9 +121,9 @@ function generateExternalClientSetup(serviceName, serviceDefinition) {
 				return `    ${methodName}(request: ${requestType}): Promise<${responseType}> {
       return this.makeRequest((client) => client.${methodName}(request))
     }`
-			} else {
-				// Generate streaming method
-				return `  ${methodName}(
+			}
+			// Generate streaming method
+			return `  ${methodName}(
 		request: ${requestType},
 		callbacks: StreamingCallbacks<${responseType}>,
 	): () => void {
@@ -150,7 +146,6 @@ function generateExternalClientSetup(serviceName, serviceDefinition) {
 			abortController.abort()
 		}
 	}\n`
-			}
 		})
 		.join("\n")
 
@@ -222,9 +217,8 @@ function generateVscodeClientImplementation(serviceName, serviceDefinition) {
 			const isStreamingResponse = methodDef.responseStream
 			if (!isStreamingResponse) {
 				return `${name}ServiceRegistry.registerMethod("${methodName}", ${methodName})`
-			} else {
-				return `${name}ServiceRegistry.registerMethod("${methodName}", ${methodName}, { isStreaming: true })`
 			}
+			return `${name}ServiceRegistry.registerMethod("${methodName}", ${methodName}, { isStreaming: true })`
 		})
 		.join("\n")
 
