@@ -25,15 +25,10 @@ export const DEFAULT_RETRY_CONFIG: FolderLockRetryConfig = {
 
 /**
  * Get the lock manager instance for standalone mode.
+ * In VSCode extension mode, always returns undefined (no multi-instance locking needed).
  */
 export async function getStandaloneLockManager(): Promise<SqliteLockManager | undefined> {
-	try {
-		const { getLockManager } = await import("../../standalone/lock-manager")
-		return getLockManager()
-	} catch (_importError) {
-		Logger.debug("Lock manager not available")
-		return undefined
-	}
+	return undefined
 }
 
 /**
@@ -110,12 +105,11 @@ export async function acquireFolderLock(options: FolderLockOptions): Promise<Fol
 		if (conflictingLock === null) {
 			// Lock was successfully acquired
 			return { acquired: true }
-		} else {
-			// Lock already exists, return the conflicting lock
-			return {
-				acquired: false,
-				conflictingLock,
-			}
+		}
+		// Lock already exists, return the conflicting lock
+		return {
+			acquired: false,
+			conflictingLock,
 		}
 	} catch (error) {
 		Logger.error("Failed to acquire folder lock:", error)
