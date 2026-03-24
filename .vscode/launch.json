@@ -27,7 +27,10 @@
 			"env": {
 				"IS_DEV": "true",
 				"DEV_WORKSPACE_FOLDER": "${workspaceFolder}",
-				"CLINE_ENVIRONMENT": "production"
+				"CLINE_ENVIRONMENT": "production",
+				"CLINE_DEV_SYSTEM_PROMPT_FILE": "${workspaceFolder}/.clinerules/system-prompt.md",
+				"CLINE_DEV_FORCE_PLC_ONLY": "true",
+				"CLINE_FORCE_PLC_SPEC_FILE": "${workspaceFolder}/.clinerules/system-prompt.md"
 			}
 		},
 		{
@@ -51,7 +54,10 @@
 			"env": {
 				"IS_DEV": "true",
 				"DEV_WORKSPACE_FOLDER": "${workspaceFolder}",
-				"CLINE_ENVIRONMENT": "staging"
+				"CLINE_ENVIRONMENT": "staging",
+				"CLINE_DEV_SYSTEM_PROMPT_FILE": "${workspaceFolder}/.clinerules/system-prompt.md",
+				"CLINE_DEV_FORCE_PLC_ONLY": "true",
+				"CLINE_FORCE_PLC_SPEC_FILE": "${workspaceFolder}/.clinerules/system-prompt.md"
 			}
 		},
 		{
@@ -75,7 +81,10 @@
 			"env": {
 				"IS_DEV": "true",
 				"DEV_WORKSPACE_FOLDER": "${workspaceFolder}",
-				"CLINE_ENVIRONMENT": "local"
+				"CLINE_ENVIRONMENT": "local",
+				"CLINE_DEV_SYSTEM_PROMPT_FILE": "${workspaceFolder}/.clinerules/system-prompt.md",
+				"CLINE_DEV_FORCE_PLC_ONLY": "true",
+				"CLINE_FORCE_PLC_SPEC_FILE": "${workspaceFolder}/.clinerules/system-prompt.md"
 			}
 		},
 		{
@@ -105,7 +114,10 @@
 				"IS_DEV": "true",
 				"TEMP_PROFILE": "true",
 				"DEV_WORKSPACE_FOLDER": "${workspaceFolder}",
-				"CLINE_ENVIRONMENT": "production"
+				"CLINE_ENVIRONMENT": "production",
+				"CLINE_DEV_SYSTEM_PROMPT_FILE": "${workspaceFolder}/.clinerules/system-prompt.md",
+				"CLINE_DEV_FORCE_PLC_ONLY": "true",
+				"CLINE_FORCE_PLC_SPEC_FILE": "${workspaceFolder}/.clinerules/system-prompt.md"
 			}
 		},
 		{

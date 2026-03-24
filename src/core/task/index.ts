@@ -1712,6 +1712,86 @@ export class Task {
 		}
 	}
 
+	private async getDevSystemPromptInjection(): Promise<string | undefined> {
+		if (process.env.IS_DEV !== "true") {
+			return undefined
+		}
+
+		const configuredPath = process.env.CLINE_DEV_SYSTEM_PROMPT_FILE?.trim()
+		if (!configuredPath) {
+			return undefined
+		}
+
+		const resolvedPath = path.isAbsolute(configuredPath) ? configuredPath : path.resolve(this.cwd, configuredPath)
+		try {
+			const content = (await fs.readFile(resolvedPath, "utf8")).trim()
+			if (!content) {
+				Logger.warn(`[Dev Prompt Injection] Ignored empty prompt file: ${resolvedPath}`)
+				return undefined
+			}
+
+			return ["# Dev System Prompt Injection", "", `Source: ${resolvedPath}`, "", content].join("\n")
+		} catch (error) {
+			Logger.warn(`[Dev Prompt Injection] Failed to read prompt file: ${resolvedPath}`, error)
+			return undefined
+		}
+	}
+
+	private isTruthyEnvFlag(value?: string): boolean {
+		if (!value) {
+			return false
+		}
+		const normalized = value.trim().toLowerCase()
+		return normalized === "1" || normalized === "true" || normalized === "yes" || normalized === "on"
+	}
+
+	private getDevPlcHardPromptPrefix(): string | undefined {
+		const forcePlcOnly =
+			this.isTruthyEnvFlag(process.env.CLINE_FORCE_PLC_ONLY) ||
+			(process.env.IS_DEV === "true" && this.isTruthyEnvFlag(process.env.CLINE_DEV_FORCE_PLC_ONLY))
+		if (!forcePlcOnly) {
+			return undefined
+		}
+
+		return [
+			"PLC DOMAIN HARD OVERRIDE (HIGHEST PRIORITY)",
+			"",
+			"- You are a PLC code generation agent in this workspace.",
+			"- Do not act as a general software assistant.",
+			"- Do not propose or generate Python/JavaScript/C#/web app demos unless the user explicitly requests those languages.",
+			"- For motion-control tasks, generate IEC 61131-3 Structured Text (ST) by default.",
+			"- Allowed primary deliverables are ST code and PLC XML/config snippets.",
+			"- If the user request is ambiguous, resolve it toward PLC/ST implementation instead of asking generic tech-stack questions.",
+			"- Never output empty ST output pin bindings such as `Status => ,`.",
+			"- Unless explicitly requested, do not generate CONFIGURATION/RESOURCE/TASK mapping blocks because IDE tooling injects those sections.",
+			"- For demo requests like motor power-on/speed control or dual-motor sync, return ST program body directly.",
+		].join("\n")
+	}
+
+	private async getForcedPlcSpecPromptInjection(): Promise<string | undefined> {
+		const forcePlcOnly =
+			this.isTruthyEnvFlag(process.env.CLINE_FORCE_PLC_ONLY) ||
+			(process.env.IS_DEV === "true" && this.isTruthyEnvFlag(process.env.CLINE_DEV_FORCE_PLC_ONLY))
+		if (!forcePlcOnly) {
+			return undefined
+		}
+
+		const configuredPath = process.env.CLINE_FORCE_PLC_SPEC_FILE?.trim() || ".clinerules/system-prompt.md"
+		const resolvedPath = path.isAbsolute(configuredPath) ? configuredPath : path.resolve(this.cwd, configuredPath)
+		try {
+			const content = (await fs.readFile(resolvedPath, "utf8")).trim()
+			if (!content) {
+				Logger.warn(`[PLC Spec Injection] Ignored empty file: ${resolvedPath}`)
+				return undefined
+			}
+
+			return ["PLC SPECIFICATION INJECTION (HIGHEST PRIORITY)", "", `Source: ${resolvedPath}`, "", content].join("\n")
+		} catch (error) {
+			Logger.warn(`[PLC Spec Injection] Failed to read file: ${resolvedPath}`, error)
+			return undefined
+		}
+	}
+
 	private getApiRequestIdSafe(): string | undefined {
 		const apiLike = this.api as Partial<{
 			getLastRequestId: () => string | undefined
@@ -1827,6 +1907,10 @@ export class Task {
 
 		const localRules = await getLocalClineRules(this.cwd, localToggles, { evaluationContext })
 		const localClineRulesFileInstructions = localRules.instructions
+		const devSystemPromptInjection = await this.getDevSystemPromptInjection()
+		const mergedLocalClineRulesFileInstructions = [localClineRulesFileInstructions, devSystemPromptInjection]
+			.filter((instruction): instruction is string => !!instruction?.trim())
+			.join("\n\n")
 		const [localCursorRulesFileInstructions, localCursorRulesDirInstructions] = await getLocalCursorRules(
 			this.cwd,
 			cursorLocalToggles,
@@ -1885,7 +1969,7 @@ export class Task {
 			skills: availableSkills,
 			focusChainSettings: this.stateManager.getGlobalSettingsKey("focusChainSettings"),
 			globalClineRulesFileInstructions,
-			localClineRulesFileInstructions,
+			localClineRulesFileInstructions: mergedLocalClineRulesFileInstructions || undefined,
 			localCursorRulesFileInstructions,
 			localCursorRulesDirInstructions,
 			localWindsurfRulesFileInstructions,
@@ -1914,7 +1998,12 @@ export class Task {
 			await this.say("conditional_rules_applied", JSON.stringify({ rules: activatedConditionalRules }))
 		}
 
-		const { systemPrompt, tools } = await getSystemPrompt(promptContext)
+		const { systemPrompt: baseSystemPrompt, tools } = await getSystemPrompt(promptContext)
+		const plcHardOverride = this.getDevPlcHardPromptPrefix()
+		const forcedPlcSpec = await this.getForcedPlcSpecPromptInjection()
+		const systemPrompt = [plcHardOverride, forcedPlcSpec, baseSystemPrompt]
+			.filter((section): section is string => !!section?.trim())
+			.join("\n\n====\n\n")
 		this.useNativeToolCalls = !!tools?.length
 		await this.writePromptMetadataArtifacts({ systemPrompt, providerInfo })
 

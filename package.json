@@ -1,8 +1,8 @@
 {
-	"name": "claude-dev",
-	"displayName": "Cline",
-	"description": "Autonomous coding agent right in your IDE, capable of creating/editing files, running commands, using the browser, and more with your permission every step of the way.",
-	"version": "3.71.0",
+	"name": "plc-agent-dev",
+	"displayName": "ControlPilot",
+	"description": "PLC-Agent is a autonomous coding agent right in your IDE, capable of creating/editing files, running commands, using the browser, and more with your permission every step of the way.",
+	"version": "0.0.1",
 	"icon": "assets/icons/icon.png",
 	"workspaces": [
 		"."
@@ -11,7 +11,7 @@
 		"vscode": "^1.84.0"
 	},
 	"author": {
-		"name": "Cline Bot Inc."
+		"name": "ldmc PLC teams"
 	},
 	"license": "Apache-2.0",
 	"publisher": "saoudrizwan",
@@ -29,18 +29,11 @@
 		"Testing"
 	],
 	"keywords": [
-		"cline",
-		"claude",
-		"dev",
-		"mcp",
-		"openrouter",
-		"coding",
+		"plc",
+		"control",
 		"agent",
-		"autonomous",
-		"chatgpt",
-		"sonnet",
-		"ai",
-		"llama"
+		"mcp",
+		"agent"
 	],
 	"activationEvents": [
 		"onLanguage",
@@ -51,80 +44,28 @@
 	"main": "./dist/extension.js",
 	"contributes": {
 		"icons": {
-			"cline-icon": {
-				"description": "cline",
+			"plc-agent-icon": {
+				"description": "plc-agent",
 				"default": {
-					"fontPath": "assets/icons/cline-bot.woff",
+					"fontPath": "assets/icons/plc-agent-icon.woff",
 					"fontCharacter": "\\e900"
 				}
 			}
 		},
-		"walkthroughs": [
-			{
-				"id": "ClineWalkthrough",
-				"title": "Meet Cline, your new coding partner",
-				"description": "Cline codes like a developer because it thinks like one. Here are 5 ways to put it to work:",
-				"steps": [
-					{
-						"id": "welcome",
-						"title": "Start with a Goal, Not Just a Prompt",
-						"description": "Tell Cline what you want to achieve. It plans, asks, and then codes, like a true partner.",
-						"media": {
-							"markdown": "walkthrough/step1.md"
-						}
-					},
-					{
-						"id": "learn",
-						"title": "Let Cline Learn Your Codebase",
-						"description": "Point Cline to your project. It builds understanding to make smart, context-aware changes.",
-						"media": {
-							"markdown": "walkthrough/step2.md"
-						}
-					},
-					{
-						"id": "advanced-features",
-						"title": "Always Use the Best AI Models",
-						"description": "Cline empowers you with State-of-the-Art AI, connecting to top models (Anthropic, Gemini, OpenAI & more).",
-						"media": {
-							"markdown": "walkthrough/step3.md"
-						}
-					},
-					{
-						"id": "mcp",
-						"title": "Extend with Powerful Tools (MCP)",
-						"description": "Connect to databases, APIs, or discover new capabilities in the MCP Marketplace.",
-						"media": {
-							"markdown": "walkthrough/step4.md"
-						}
-					},
-					{
-						"id": "getting-started",
-						"title": "You're Always in Control",
-						"description": "Review Cline's plans and diffs. Approve changes before they happen. No surprises.",
-						"media": {
-							"markdown": "walkthrough/step5.md"
-						},
-						"content": {
-							"path": "walkthrough/step5.md"
-						}
-					}
-				]
-			}
-		],
 		"viewsContainers": {
 			"activitybar": [
 				{
-					"id": "claude-dev-ActivityBar",
-					"title": "Cline",
+					"id": "plc-agent-ActivityBar",
+					"title": "PLC-Agent",
 					"icon": "assets/icons/icon.svg"
 				}
 			]
 		},
 		"views": {
-			"claude-dev-ActivityBar": [
+			"plc-agent-ActivityBar": [
 				{
 					"type": "webview",
-					"id": "claude-dev.SidebarProvider",
+					"id": "plc-agent-dev.SidebarProvider",
 					"name": "",
 					"icon": "assets/icons/icon.svg"
 				}
@@ -132,117 +73,117 @@
 		},
 		"commands": [
 			{
-				"command": "cline.plusButtonClicked",
+				"command": "plc-agent-dev.plusButtonClicked",
 				"title": "New Task",
 				"icon": "$(add)"
 			},
 			{
-				"command": "cline.mcpButtonClicked",
+				"command": "plc-agent-dev.mcpButtonClicked",
 				"title": "MCP Servers",
 				"icon": "$(server)"
 			},
 			{
-				"command": "cline.historyButtonClicked",
+				"command": "plc-agent-dev.historyButtonClicked",
 				"title": "History",
 				"icon": "$(history)"
 			},
 			{
-				"command": "cline.accountButtonClicked",
+				"command": "plc-agent-dev.accountButtonClicked",
 				"title": "Account",
 				"icon": "$(account)"
 			},
 			{
-				"command": "cline.settingsButtonClicked",
+				"command": "plc-agent-dev.settingsButtonClicked",
 				"title": "Settings",
 				"icon": "$(settings-gear)"
 			},
 			{
-				"command": "cline.dev.createTestTasks",
+				"command": "plc-agent-dev.dev.createTestTasks",
 				"title": "Create Test Tasks",
-				"category": "Cline",
+				"category": "PLC-Agent",
 				"when": "cline.isDevMode"
 			},
 			{
-				"command": "cline.dev.expireMcpOAuthTokens",
+				"command": "plc-agent-dev.dev.expireMcpOAuthTokens",
 				"title": "Expire MCP OAuth Tokens (for testing)",
-				"category": "Cline",
+				"category": "PLC-Agent",
 				"when": "cline.isDevMode"
 			},
 			{
-				"command": "cline.addToChat",
-				"title": "Add to Cline",
-				"category": "Cline"
+				"command": "plc-agent-dev.addToChat",
+				"title": "Add to PLC-Agent",
+				"category": "PLC-Agent"
 			},
 			{
-				"command": "cline.addTerminalOutputToChat",
-				"title": "Add to Cline",
-				"category": "Cline"
+				"command": "plc-agent-dev.addTerminalOutputToChat",
+				"title": "Add to PLC-Agent",
+				"category": "PLC-Agent"
 			},
 			{
-				"command": "cline.focusChatInput",
+				"command": "plc-agent-dev.focusChatInput",
 				"title": "Jump to Chat Input",
-				"category": "Cline"
+				"category": "PLC-Agent"
 			},
 			{
-				"command": "cline.generateGitCommitMessage",
+				"command": "plc-agent-dev.generateGitCommitMessage",
 				"title": "Generate Commit Message with Cline",
-				"category": "Cline",
-				"icon": "$(cline-icon)"
+				"category": "PLC-Agent",
+				"icon": "$(plc-agent-icon)"
 			},
 			{
-				"command": "cline.abortGitCommitMessage",
-				"title": "Generate Commit Message with Cline - Stop",
-				"category": "Cline",
+				"command": "plc-agent-dev.abortGitCommitMessage",
+				"title": "Generate Commit Message with PLC-Agent - Stop",
+				"category": "PLC-Agent",
 				"icon": "$(debug-stop)"
 			},
 			{
-				"command": "cline.explainCode",
+				"command": "plc-agent-dev.explainCode",
 				"title": "Explain with Cline",
-				"category": "Cline"
+				"category": "PLC-Agent"
 			},
 			{
-				"command": "cline.improveCode",
-				"title": "Improve with Cline",
-				"category": "Cline"
+				"command": "plc-agent-dev.improveCode",
+				"title": "Improve with PLC-Agent",
+				"category": "PLC-Agent"
 			},
 			{
-				"command": "cline.jupyterGenerateCell",
-				"title": "Generate Jupyter Cell with Cline",
-				"category": "Cline",
+				"command": "plc-agent-dev.jupyterGenerateCell",
+				"title": "Generate Jupyter Cell with PLC-Agent",
+				"category": "PLC-Agent",
 				"icon": "$(sparkle)"
 			},
 			{
-				"command": "cline.jupyterExplainCell",
-				"title": "Explain Jupyter Cell with Cline",
-				"category": "Cline",
+				"command": "plc-agent-dev.jupyterExplainCell",
+				"title": "Explain Jupyter Cell with PLC-Agent",
+				"category": "PLC-Agent",
 				"icon": "$(question)"
 			},
 			{
-				"command": "cline.jupyterImproveCell",
-				"title": "Improve Jupyter Cell with Cline",
-				"category": "Cline",
+				"command": "plc-agent-dev.jupyterImproveCell",
+				"title": "Improve Jupyter Cell with PLC-Agent",
+				"category": "PLC-Agent",
 				"icon": "$(lightbulb)"
 			},
 			{
-				"command": "cline.openWalkthrough",
+				"command": "plc-agent-dev.openWalkthrough",
 				"title": "Open Walkthrough",
-				"category": "Cline"
+				"category": "PLC-Agent"
 			},
 			{
-				"command": "cline.reconstructTaskHistory",
+				"command": "plc-agent-dev.reconstructTaskHistory",
 				"title": "Reconstruct Task History",
-				"category": "Cline"
+				"category": "PLC-Agent"
 			},
 			{
 				"command": "cline.reviewComment.reply",
 				"title": "Reply",
-				"category": "Cline",
+				"category": "PLC-Agent",
 				"enablement": "!commentIsEmpty"
 			},
 			{
 				"command": "cline.reviewComment.addToChat",
-				"title": "Add to Cline Chat",
-				"category": "Cline",
+				"title": "Add to PLC-Agent Chat",
+				"category": "PLC-Agent",
 				"icon": "$(link-external)"
 			}
 		],
@@ -253,7 +194,7 @@
 				"when": "commentEditorFocused && commentController == cline-ai-review && !commentIsEmpty"
 			},
 			{
-				"command": "cline.addToChat",
+				"command": "plc-agent-dev.addToChat",
 				"key": "cmd+'",
 				"mac": "cmd+'",
 				"win": "ctrl+'",
@@ -261,11 +202,11 @@
 				"when": "editorHasSelection"
 			},
 			{
-				"command": "cline.generateGitCommitMessage",
+				"command": "plc-agent-dev.generateGitCommitMessage",
 				"when": "config.git.enabled && scmProvider == git"
 			},
 			{
-				"command": "cline.focusChatInput",
+				"command": "plc-agent-dev.focusChatInput",
 				"key": "cmd+'",
 				"mac": "cmd+'",
 				"win": "ctrl+'",
@@ -276,82 +217,82 @@
 		"menus": {
 			"view/title": [
 				{
-					"command": "cline.plusButtonClicked",
+					"command": "plc-agent-dev.plusButtonClicked",
 					"group": "navigation@1",
-					"when": "view == claude-dev.SidebarProvider"
+					"when": "view == plc-agent-dev.SidebarProvider"
 				},
 				{
-					"command": "cline.mcpButtonClicked",
+					"command": "plc-agent-dev.mcpButtonClicked",
 					"group": "navigation@2",
-					"when": "view == claude-dev.SidebarProvider"
+					"when": "view == plc-agent-dev.SidebarProvider"
 				},
 				{
-					"command": "cline.historyButtonClicked",
+					"command": "plc-agent-dev.historyButtonClicked",
 					"group": "navigation@3",
-					"when": "view == claude-dev.SidebarProvider"
+					"when": "view == plc-agent-dev.SidebarProvider"
 				},
 				{
-					"command": "cline.accountButtonClicked",
+					"command": "plc-agent-dev.accountButtonClicked",
 					"group": "navigation@5",
-					"when": "view == claude-dev.SidebarProvider"
+					"when": "view == plc-agent-dev.SidebarProvider"
 				},
 				{
-					"command": "cline.settingsButtonClicked",
+					"command": "plc-agent-dev.settingsButtonClicked",
 					"group": "navigation@6",
-					"when": "view == claude-dev.SidebarProvider"
+					"when": "view == plc-agent-dev.SidebarProvider"
 				}
 			],
 			"editor/context": [
 				{
-					"command": "cline.addToChat",
+					"command": "plc-agent-dev.addToChat",
 					"group": "navigation",
 					"when": "editorHasSelection"
 				}
 			],
 			"terminal/context": [
 				{
-					"command": "cline.addTerminalOutputToChat",
+					"command": "plc-agent-dev.addTerminalOutputToChat",
 					"group": "navigation"
 				}
 			],
 			"scm/title": [
 				{
-					"command": "cline.generateGitCommitMessage",
+					"command": "plc-agent-dev.generateGitCommitMessage",
 					"group": "navigation",
 					"when": "config.git.enabled && scmProvider == git && !cline.isGeneratingCommit"
 				},
 				{
-					"command": "cline.abortGitCommitMessage",
+					"command": "plc-agent-dev.abortGitCommitMessage",
 					"group": "navigation",
 					"when": "config.git.enabled && scmProvider == git && cline.isGeneratingCommit"
 				}
 			],
 			"notebook/toolbar": [
 				{
-					"command": "cline.jupyterGenerateCell",
+					"command": "plc-agent-dev.jupyterGenerateCell",
 					"group": "navigation/add@1",
 					"when": "notebookType == 'jupyter-notebook'"
 				}
 			],
 			"notebook/cell/title": [
 				{
-					"command": "cline.jupyterExplainCell",
+					"command": "plc-agent-dev.jupyterExplainCell",
 					"group": "inline@1",
 					"when": "notebookType == 'jupyter-notebook'"
 				},
 				{
-					"command": "cline.jupyterImproveCell",
+					"command": "plc-agent-dev.jupyterImproveCell",
 					"group": "inline@2",
 					"when": "notebookType == 'jupyter-notebook'"
 				}
 			],
 			"commandPalette": [
 				{
-					"command": "cline.generateGitCommitMessage",
+					"command": "plc-agent-dev.generateGitCommitMessage",
 					"when": "config.git.enabled && !cline.isGeneratingCommit"
 				},
 				{
-					"command": "cline.abortGitCommitMessage",
+					"command": "plc-agent-dev.abortGitCommitMessage",
 					"when": "config.git.enabled && cline.isGeneratingCommit"
 				},
 				{
@@ -375,7 +316,7 @@
 			]
 		},
 		"configuration": {
-			"title": "Cline",
+			"title": "plc-agent",
 			"properties": {}
 		}
 	},

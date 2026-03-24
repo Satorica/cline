@@ -4,6 +4,7 @@ import { memo, useCallback, useMemo, useState } from "react"
 import { TypewriterText } from "@/components/chat/TypewriterText"
 import { cleanPathPrefix } from "@/components/common/CodeAccordian"
 import { Button } from "@/components/ui/button"
+import { AGENT_NAME } from "@/constants"
 import { cn } from "@/lib/utils"
 import { FileServiceClient } from "@/services/grpc-client"
 import { getIconByToolName, getToolsNotInCurrentActivities, isLowStakesTool } from "../../utils/messageUtils"
@@ -361,5 +362,5 @@ function getToolGroupSummary(messages: ClineMessage[]): string {
 		parts.push(`performed ${counts.search} search${counts.search > 1 ? "es" : ""}`)
 	}
 
-	return parts.length === 0 ? "Context" : "Cline" + action + parts.join(", ")
+	return parts.length === 0 ? "Context" : AGENT_NAME + action + parts.join(", ")
 }
