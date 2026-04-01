@@ -1,0 +1,3122 @@
+[
+	{
+		"name": "MC_Power",
+		"type": "function_block",
+		"description": "This Function Block controls the power stage (On or Off).",
+		"inputs": [
+			{
+				"name": "Enable",
+				"type": "BOOL",
+				"description": "As long as ‘Enable’ is true, power is being enabled."
+			},
+			{
+				"name": "EnablePositive",
+				"type": "BOOL",
+				"description": "As long as ‘Enable’ is true, this permits motion in positive direction"
+			},
+			{
+				"name": "EnableNegative",
+				"type": "BOOL",
+				"description": "As long as ‘Enable’ is true, this permits motion in negative direction"
+			}
+		],
+		"outputs": [
+			{
+				"name": "Status",
+				"type": "BOOL",
+				"description": "Effective state of the power stage"
+			},
+			{
+				"name": "Valid",
+				"type": "BOOL",
+				"description": "If true, a valid set of outputs is available at the FB"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Axis",
+				"type": "AXIS_REF",
+				"description": "Reference to the axis"
+			}
+		],
+		"notes": [
+			"• The ‘Enable’ input enables the power stage in the drive and not the FB itself • If the MC_Power FB is called with the ‘Enable’ = TRUE while being in ‘Disabled’, the axis state changes to ‘Standstill’. • It is possible to set an error variable when the Command is TRUE for a while and the Status remains false with a Timer FB and an AND Function (with inverted Status input). It indicates that there is a hardware problem with the power stage. • If power fails (also during operation) it will generate a transition to the ‘ErrorStop’ state. • ‘EnablePositive’ and ‘EnableNegative’ are both level sensitive. • ‘EnablePositive’ & ‘EnableNegative’ can both be true. • Only 1 FB MC_Power should be issued per axis."
+		],
+		"text": "MC_Power\nThis Function Block controls the power stage (On or Off).\ninput Enable BOOL As long as ‘Enable’ is true, power is being enabled.\ninput EnablePositive BOOL As long as ‘Enable’ is true, this permits motion in positive direction\ninput EnableNegative BOOL As long as ‘Enable’ is true, this permits motion in negative direction\noutput Status BOOL Effective state of the power stage\noutput Valid BOOL If true, a valid set of outputs is available at the FB\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\ninout Axis AXIS_REF Reference to the axis"
+	},
+	{
+		"name": "MC_Home",
+		"type": "function_block",
+		"description": "This Function Block commands the axis to perform the «search home» sequence. The details of this sequence are manufacturer dependent and can be set by the axis' parameters. The 'Position' input is used to set the absolute position when reference signal is detected. This Function Block completes at 'Standstill' if it was started in 'Standstill'.",
+		"inputs": [
+			{
+				"name": "Execute",
+				"type": "BOOL",
+				"description": "Start the motion at rising edge"
+			},
+			{
+				"name": "Position",
+				"type": "REAL",
+				"description": "Absolute position when the reference signal is detected [u]"
+			},
+			{
+				"name": "BufferMode",
+				"type": "MC_BufferMode",
+				"description": "Defines the chronological sequence of the FB. See 2.4.2 Aborting versus Buffered modes"
+			}
+		],
+		"outputs": [
+			{
+				"name": "Done",
+				"type": "BOOL",
+				"description": "Reference known and set successfully"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Active",
+				"type": "BOOL",
+				"description": "Indicates that the FB has control on the axis"
+			},
+			{
+				"name": "CommandAborted",
+				"type": "BOOL",
+				"description": "'Command' is aborted by another command"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Axis",
+				"type": "AXIS_REF",
+				"description": "Reference to the axis"
+			}
+		],
+		"notes": [
+			"MC_Home is a generic FB which does a system specified homing procedure which can be constructed by the StepHoming FBs as specified in Part 5 – Homing Procedures."
+		],
+		"text": "MC_Home\nThis Function Block commands the axis to perform the «search home» sequence. The details of this sequence are manufacturer dependent and can be set by the axis' parameters. The 'Position' input is used to set the absolute position when reference signal is detected. This Function Block completes at 'Standstill' if it was started in 'Standstill'.\ninput Execute BOOL Start the motion at rising edge\ninput Position REAL Absolute position when the reference signal is detected [u]\ninput BufferMode MC_BufferMode Defines the chronological sequence of the FB. See 2.4.2 Aborting versus Buffered modes\noutput Done BOOL Reference known and set successfully\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Active BOOL Indicates that the FB has control on the axis\noutput CommandAborted BOOL 'Command' is aborted by another command\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\ninout Axis AXIS_REF Reference to the axis"
+	},
+	{
+		"name": "MC_Stop",
+		"type": "function_block",
+		"description": "This Function Block commands a controlled motion stop and transfers the axis to the state ‘Stopping’. It aborts any ongoing Function Block execution. While the axis is in state ‘Stopping’, no other FB can perform any motion on the same axis. After the axis has reached ‘Velocity’ zero, the ‘Done’ output is set to TRUE immediately. The axis remains in the state ‘Stopping’ as long as ‘Execute’ is still TRUE or ‘Velocity’ zero is not yet reached. As soon as ‘Done’ is SET and ‘Execute’ is FALSE the axis goes to state ‘Standstill’.",
+		"inputs": [
+			{
+				"name": "Execute",
+				"type": "BOOL",
+				"description": "Start the action at rising edge"
+			},
+			{
+				"name": "Deceleration",
+				"type": "REAL",
+				"description": "Value of the ‘Deceleration’ [u/s2]"
+			},
+			{
+				"name": "Jerk",
+				"type": "REAL",
+				"description": "Value of the ‘Jerk’ [u/s3]"
+			}
+		],
+		"outputs": [
+			{
+				"name": "Done",
+				"type": "BOOL",
+				"description": "Zero velocity reached"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "CommandAborted",
+				"type": "BOOL",
+				"description": "‘Command’ is aborted by switching off power (only possibility to abort)"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Axis",
+				"type": "AXIS_REF",
+				"description": "Reference to the axis"
+			}
+		],
+		"notes": [
+			"This FB is primarily intended for emergency stop functionality or exception situations",
+			"As long as ‘Execute’ is high, the axis remains in the state ‘Stopping’ and may not be executing any other motion command.",
+			"If ‘Deceleration’ = 0, the behavior of the function block is implementation specific"
+		],
+		"text": "MC_Stop\nThis Function Block commands a controlled motion stop and transfers the axis to the state ‘Stopping’. It aborts any ongoing Function Block execution. While the axis is in state ‘Stopping’, no other FB can perform any motion on the same axis. After the axis has reached ‘Velocity’ zero, the ‘Done’ output is set to TRUE immediately. The axis remains in the state ‘Stopping’ as long as ‘Execute’ is still TRUE or ‘Velocity’ zero is not yet reached. As soon as ‘Done’ is SET and ‘Execute’ is FALSE the axis goes to state ‘Standstill’.\ninput Execute BOOL Start the action at rising edge\ninput Deceleration REAL Value of the ‘Deceleration’ [u/s2]\ninput Jerk REAL Value of the ‘Jerk’ [u/s3]\noutput Done BOOL Zero velocity reached\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput CommandAborted BOOL ‘Command’ is aborted by switching off power (only possibility to abort)\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\ninout Axis AXIS_REF Reference to the axis"
+	},
+	{
+		"name": "MC_Halt",
+		"type": "function_block",
+		"description": "This Function Block commands a controlled motion stop. The axis is moved to the state ‘DiscreteMotion’, until the velocity is zero. With the ‘Done’ output set, the state is transferred to ‘Standstill’.",
+		"inputs": [
+			{
+				"name": "Execute",
+				"type": "BOOL",
+				"description": "Start the action at rising edge"
+			},
+			{
+				"name": "Deceleration",
+				"type": "REAL",
+				"description": "Value of the ‘Deceleration’ [u/s2]"
+			},
+			{
+				"name": "Jerk",
+				"type": "REAL",
+				"description": "Value of the ‘Jerk’ [u/s3]"
+			},
+			{
+				"name": "BufferMode",
+				"type": "MC_BUFFER_MODE",
+				"description": "Defines the chronological sequence of the FB. See 2.4.2 Aborting versus Buffered modes"
+			}
+		],
+		"outputs": [
+			{
+				"name": "Done",
+				"type": "BOOL",
+				"description": "Zero velocity reached"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Active",
+				"type": "BOOL",
+				"description": "Indicates that the FB has control on the axis"
+			},
+			{
+				"name": "CommandAborted",
+				"type": "BOOL",
+				"description": "‘Command’ is aborted by another command"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Axis",
+				"type": "AXIS_REF",
+				"description": "Reference to the axis"
+			}
+		],
+		"notes": [
+			"• MC_Halt is used to stop the axis under normal operation conditions. In non-buffered mode it is possible to set another motion command during deceleration of the axis, which will abort the MC_Halt and will be executed immediately. • If this command is active the next command can be issued. E.g. a driverless vehicle detects an obstacle and needs to stop. MC_Halt is issued. Before the ‘Standstill’ is reached the obstacle is removed and the motion can be continued by setting another motion command, so the vehicle does not stop."
+		],
+		"text": "MC_Halt\nThis Function Block commands a controlled motion stop. The axis is moved to the state ‘DiscreteMotion’, until the velocity is zero. With the ‘Done’ output set, the state is transferred to ‘Standstill’.\ninput Execute BOOL Start the action at rising edge\ninput Deceleration REAL Value of the ‘Deceleration’ [u/s2]\ninput Jerk REAL Value of the ‘Jerk’ [u/s3]\ninput BufferMode MC_BUFFER_MODE Defines the chronological sequence of the FB. See 2.4.2 Aborting versus Buffered modes\noutput Done BOOL Zero velocity reached\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Active BOOL Indicates that the FB has control on the axis\noutput CommandAborted BOOL ‘Command’ is aborted by another command\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\ninout Axis AXIS_REF Reference to the axis"
+	},
+	{
+		"name": "MC_MoveAbsolute",
+		"type": "function_block",
+		"description": "This Function Block commands a controlled motion to a specified absolute position.",
+		"inputs": [
+			{
+				"name": "Execute",
+				"type": "BOOL",
+				"description": "Start the motion at rising edge"
+			},
+			{
+				"name": "ContinuousUpdate",
+				"type": "BOOL",
+				"description": "See 2.4.6 The input 'ContinuousUpdate'"
+			},
+			{
+				"name": "Position",
+				"type": "REAL",
+				"description": "Commanded 'Position' for the motion (in technical unit [u]) (negative or positive)"
+			},
+			{
+				"name": "Velocity",
+				"type": "REAL",
+				"description": "Value of the maximum 'Velocity' (not necessarily reached) [u/s]."
+			},
+			{
+				"name": "Acceleration",
+				"type": "REAL",
+				"description": "Value of the 'Acceleration' (always positive) (increasing energy of the motor) [u/s2]"
+			},
+			{
+				"name": "Deceleration",
+				"type": "REAL",
+				"description": "Value of the 'Deceleration' (always positive) (decreasing energy of the motor) [u/s2]"
+			},
+			{
+				"name": "Jerk",
+				"type": "REAL",
+				"description": "Value of the 'Jerk' [u/s3]. (always positive)"
+			},
+			{
+				"name": "Direction",
+				"type": "MC.Direction",
+				"description": "Enum type (1-of-4 values: mcPositiveDirection, mcShortestWay, mcNegativeDirection, mcCurrentDirection)"
+			},
+			{
+				"name": "BufferMode",
+				"type": "MC_BUFFER_MODE",
+				"description": "Defines the chronological sequence of the FB. See 2.4.2 'Aborting versus Buffered modes'"
+			}
+		],
+		"outputs": [
+			{
+				"name": "Done",
+				"type": "BOOL",
+				"description": "Commanded position finally reached"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Active",
+				"type": "BOOL",
+				"description": "Indicates that the FB has control on the axis"
+			},
+			{
+				"name": "CommandAborted",
+				"type": "BOOL",
+				"description": "'Command' is aborted by another command"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Axis",
+				"type": "AXIS_REF",
+				"description": "Reference to the axis"
+			}
+		],
+		"notes": [
+			"· This action completes with velocity zero if no further actions are pending· If there is only one mathematical solution to reach the 'CommandedPosition' (like in linear systems), the value of the input 'Direction' is ignored· For modulo axis - valid absolute position values are in the range of [0, 360[, (360 is excluded), or corresponding range. The application however may shift the 'CommandedPosition' of MC_MoveAbsolute into the corresponding modulo range.· The Enum type 'mcShortestWay' is focused to a trajectory which will go through the shortest route. The decision which direction to go is based on the current position where the command is issued."
+		],
+		"text": "MC_MoveAbsolute\nThis Function Block commands a controlled motion to a specified absolute position.\ninput Execute BOOL Start the motion at rising edge\ninput ContinuousUpdate BOOL See 2.4.6 The input 'ContinuousUpdate'\ninput Position REAL Commanded 'Position' for the motion (in technical unit [u]) (negative or positive)\ninput Velocity REAL Value of the maximum 'Velocity' (not necessarily reached) [u/s].\ninput Acceleration REAL Value of the 'Acceleration' (always positive) (increasing energy of the motor) [u/s2]\ninput Deceleration REAL Value of the 'Deceleration' (always positive) (decreasing energy of the motor) [u/s2]\ninput Jerk REAL Value of the 'Jerk' [u/s3]. (always positive)\ninput Direction MC.Direction Enum type (1-of-4 values: mcPositiveDirection, mcShortestWay, mcNegativeDirection, mcCurrentDirection)\ninput BufferMode MC_BUFFER_MODE Defines the chronological sequence of the FB. See 2.4.2 'Aborting versus Buffered modes'\noutput Done BOOL Commanded position finally reached\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Active BOOL Indicates that the FB has control on the axis\noutput CommandAborted BOOL 'Command' is aborted by another command\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\ninout Axis AXIS_REF Reference to the axis"
+	},
+	{
+		"name": "MC_MoveRelative",
+		"type": "function_block",
+		"description": "This Function Block commands a controlled motion of a specified distance relative to the set position at the time of the execution.",
+		"inputs": [
+			{
+				"name": "Execute",
+				"type": "BOOL",
+				"description": "Start the motion at rising edge"
+			},
+			{
+				"name": "ContinuousUpdate",
+				"type": "BOOL",
+				"description": "See 2.4.6 The input 'ContinuousUpdate'"
+			},
+			{
+				"name": "Distance",
+				"type": "REAL",
+				"description": "Relative distance for the motion (in technical unit [u])"
+			},
+			{
+				"name": "Velocity",
+				"type": "REAL",
+				"description": "Value of the maximum velocity (not necessarily reached) [u/s]"
+			},
+			{
+				"name": "Acceleration",
+				"type": "REAL",
+				"description": "Value of the acceleration (increasing energy of the motor) [u/s2]"
+			},
+			{
+				"name": "Deceleration",
+				"type": "REAL",
+				"description": "Value of the deceleration (decreasing energy of the motor) [u/s2]"
+			},
+			{
+				"name": "Jerk",
+				"type": "REAL",
+				"description": "Value of the Jerk [u/s3]"
+			},
+			{
+				"name": "BufferMode",
+				"type": "MC_BUFFER_MODE",
+				"description": "Defines the chronological sequence of the FB. See 2.4.2 Aborting versus Buffered modes"
+			}
+		],
+		"outputs": [
+			{
+				"name": "Done",
+				"type": "BOOL",
+				"description": "Commanded distance reached"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Active",
+				"type": "BOOL",
+				"description": "Indicates that the FB has control on the axis"
+			},
+			{
+				"name": "CommandAborted",
+				"type": "BOOL",
+				"description": "'Command' is aborted by another command"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Axis",
+				"type": "AXIS_REF",
+				"description": "Reference to the axis"
+			}
+		],
+		"notes": [
+			"This action completes with velocity zero if no further actions are pending."
+		],
+		"text": "MC_MoveRelative\nThis Function Block commands a controlled motion of a specified distance relative to the set position at the time of the execution.\ninput Execute BOOL Start the motion at rising edge\ninput ContinuousUpdate BOOL See 2.4.6 The input 'ContinuousUpdate'\ninput Distance REAL Relative distance for the motion (in technical unit [u])\ninput Velocity REAL Value of the maximum velocity (not necessarily reached) [u/s]\ninput Acceleration REAL Value of the acceleration (increasing energy of the motor) [u/s2]\ninput Deceleration REAL Value of the deceleration (decreasing energy of the motor) [u/s2]\ninput Jerk REAL Value of the Jerk [u/s3]\ninput BufferMode MC_BUFFER_MODE Defines the chronological sequence of the FB. See 2.4.2 Aborting versus Buffered modes\noutput Done BOOL Commanded distance reached\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Active BOOL Indicates that the FB has control on the axis\noutput CommandAborted BOOL 'Command' is aborted by another command\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\ninout Axis AXIS_REF Reference to the axis"
+	},
+	{
+		"name": "MC_MoveAdditive",
+		"type": "function_block",
+		"description": "This Function Block commands a controlled motion of a specified relative distance additional to the most recent com-manded position in the axis state 'DiscreteMotion'. The most recent commanded position may be the result of a previ-ous MC_MoveAdditive motion which was aborted. If the FB is activated in the axis state 'ContinuousMotion', the specified relative distance is added to the set position at the time of the execution.",
+		"inputs": [
+			{
+				"name": "Execute",
+				"type": "BOOL",
+				"description": "Start the motion at rising edge"
+			},
+			{
+				"name": "ContinuousUpdate",
+				"type": "BOOL",
+				"description": "See 2.4.6 The input 'ContinuousUpdate'"
+			},
+			{
+				"name": "Distance",
+				"type": "REAL",
+				"description": "Relative distance for the motion (in technical unit [u])"
+			},
+			{
+				"name": "Velocity",
+				"type": "REAL",
+				"description": "Value of the maximum velocity (not necessarily reached) [u/s]"
+			},
+			{
+				"name": "Acceleration",
+				"type": "REAL",
+				"description": "Value of the acceleration (increasing energy of the motor) [u/s2]"
+			},
+			{
+				"name": "Deceleration",
+				"type": "REAL",
+				"description": "Value of the deceleration (decreasing energy of the motor) [u/s2]"
+			},
+			{
+				"name": "Jerk",
+				"type": "REAL",
+				"description": "Value of the Jerk [u/s3]"
+			},
+			{
+				"name": "BufferMode",
+				"type": "MC_BUFFER_MODE",
+				"description": "Defines the chronological sequence of the FB. See 2.4.2 Aborting versus Buffered modes"
+			}
+		],
+		"outputs": [
+			{
+				"name": "Done",
+				"type": "BOOL",
+				"description": "Commanded distance reached"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be ex-pected"
+			},
+			{
+				"name": "Active",
+				"type": "BOOL",
+				"description": "Indicates that the FB has control on the axis"
+			},
+			{
+				"name": "CommandAborted",
+				"type": "BOOL",
+				"description": "'Command' is aborted by another command"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Axis",
+				"type": "AXIS_REF",
+				"description": "Reference to the axis"
+			}
+		],
+		"notes": [
+			"-"
+		],
+		"text": "MC_MoveAdditive\nThis Function Block commands a controlled motion of a specified relative distance additional to the most recent com-manded position in the axis state 'DiscreteMotion'. The most recent commanded position may be the result of a previ-ous MC_MoveAdditive motion which was aborted. If the FB is activated in the axis state 'ContinuousMotion', the specified relative distance is added to the set position at the time of the execution.\ninput Execute BOOL Start the motion at rising edge\ninput ContinuousUpdate BOOL See 2.4.6 The input 'ContinuousUpdate'\ninput Distance REAL Relative distance for the motion (in technical unit [u])\ninput Velocity REAL Value of the maximum velocity (not necessarily reached) [u/s]\ninput Acceleration REAL Value of the acceleration (increasing energy of the motor) [u/s2]\ninput Deceleration REAL Value of the deceleration (decreasing energy of the motor) [u/s2]\ninput Jerk REAL Value of the Jerk [u/s3]\ninput BufferMode MC_BUFFER_MODE Defines the chronological sequence of the FB. See 2.4.2 Aborting versus Buffered modes\noutput Done BOOL Commanded distance reached\noutput Busy BOOL The FB is not finished and new output values are to be ex-pected\noutput Active BOOL Indicates that the FB has control on the axis\noutput CommandAborted BOOL 'Command' is aborted by another command\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\ninout Axis AXIS_REF Reference to the axis"
+	},
+	{
+		"name": "MC_MoveSuperimposed",
+		"type": "function_block",
+		"description": "This Function Block commands a controlled motion of a specified relative distance additional to an existing motion. The existing Motion is not interrupted, but is superimposed by the additional motion.",
+		"inputs": [
+			{
+				"name": "Execute",
+				"type": "BOOL",
+				"description": "Start the motion at rising edge"
+			},
+			{
+				"name": "ContinuousUpdate",
+				"type": "BOOL",
+				"description": "See 2.4.6 The input 'ContinuousUpdate'"
+			},
+			{
+				"name": "Distance",
+				"type": "REAL",
+				"description": "Additional distance that is to be superimposed (in technical unit [u])"
+			},
+			{
+				"name": "VelocityDiff",
+				"type": "REAL",
+				"description": "Value of the velocity difference of the additional motion (not necessarily reached) [u/s]"
+			},
+			{
+				"name": "Acceleration",
+				"type": "REAL",
+				"description": "Value of the acceleration (increasing energy of the motor) [u/s2]"
+			},
+			{
+				"name": "Deceleration",
+				"type": "REAL",
+				"description": "Value of the deceleration (decreasing energy of the motor) [u/s2]"
+			},
+			{
+				"name": "Jerk",
+				"type": "REAL",
+				"description": "Value of the Jerk [u/s3]"
+			}
+		],
+		"outputs": [
+			{
+				"name": "Done",
+				"type": "BOOL",
+				"description": "Additional distance superimposed to the ongoing motion"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "CommandAborted",
+				"type": "BOOL",
+				"description": "'Command' is aborted by another command"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			},
+			{
+				"name": "CoveredDistance",
+				"type": "REAL",
+				"description": "Displays continuously the covered distance contributed by this FB since it was started"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Axis",
+				"type": "AXIS_REF",
+				"description": "Reference to the axis"
+			}
+		],
+		"notes": [
+			"If MC_MoveSuperimposed is active, then any other command in aborting mode except MC_MoveSuperimposed will abort both motion commands: both the MC_MoveSuperimposed and the underlying motion command. In any other mode, the underlying motion command is not abortedIf MC_MoveSuperimposed is active and another MC_MoveSuperimposed is commanded, only the on-going MC_MoveSuperimposed command is aborted, and replaced by the new MC_MoveSuperimposed, but not the underlying motion commandThe FB MC_MoveSuperimposed causes a change of the velocity and, if applicable, the commanded position of an ongoing motion in all relevant statesIn the state 'Standstill' the FB MC_MoveSuperimposed acts like MC_MoveRelativeThe values of 'Acceleration', 'Deceleration', and 'Jerk' are additional values to the on-going motion, and not absolute ones. With this, the underlying FB always finishes its job in the same period of time regardless of whether a MC_MoveSuperimposed FB takes place concurrently.The output 'Active' has a different behavior as in buffered FBs."
+		],
+		"text": "MC_MoveSuperimposed\nThis Function Block commands a controlled motion of a specified relative distance additional to an existing motion. The existing Motion is not interrupted, but is superimposed by the additional motion.\ninput Execute BOOL Start the motion at rising edge\ninput ContinuousUpdate BOOL See 2.4.6 The input 'ContinuousUpdate'\ninput Distance REAL Additional distance that is to be superimposed (in technical unit [u])\ninput VelocityDiff REAL Value of the velocity difference of the additional motion (not necessarily reached) [u/s]\ninput Acceleration REAL Value of the acceleration (increasing energy of the motor) [u/s2]\ninput Deceleration REAL Value of the deceleration (decreasing energy of the motor) [u/s2]\ninput Jerk REAL Value of the Jerk [u/s3]\noutput Done BOOL Additional distance superimposed to the ongoing motion\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput CommandAborted BOOL 'Command' is aborted by another command\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\noutput CoveredDistance REAL Displays continuously the covered distance contributed by this FB since it was started\ninout Axis AXIS_REF Reference to the axis"
+	},
+	{
+		"name": "MC_HaltSuperimposed",
+		"type": "function_block",
+		"description": "This Function Block commands a halt to all superimposed motions of the axis. The underlying motion is not inter-rupted.",
+		"inputs": [
+			{
+				"name": "Execute",
+				"type": "BOOL",
+				"description": "Start the action at rising edge"
+			},
+			{
+				"name": "Deceleration",
+				"type": "REAL",
+				"description": "Value of the deceleration [u/s2]"
+			},
+			{
+				"name": "Jerk",
+				"type": "REAL",
+				"description": "Value of the Jerk [u/s3]"
+			}
+		],
+		"outputs": [
+			{
+				"name": "Done",
+				"type": "BOOL",
+				"description": "Superimposed motion halted"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "CommandAborted",
+				"type": "BOOL",
+				"description": "‘Command’ is aborted by another command"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Axis",
+				"type": "AXIS_REF",
+				"description": "Reference to the axis"
+			}
+		],
+		"notes": [],
+		"text": "MC_HaltSuperimposed\nThis Function Block commands a halt to all superimposed motions of the axis. The underlying motion is not inter-rupted.\ninput Execute BOOL Start the action at rising edge\ninput Deceleration REAL Value of the deceleration [u/s2]\ninput Jerk REAL Value of the Jerk [u/s3]\noutput Done BOOL Superimposed motion halted\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput CommandAborted BOOL ‘Command’ is aborted by another command\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\ninout Axis AXIS_REF Reference to the axis"
+	},
+	{
+		"name": "MC_MoveVelocity",
+		"type": "function_block",
+		"description": "This Function Block commands a never ending controlled motion at a specified velocity.",
+		"inputs": [
+			{
+				"name": "Execute",
+				"type": "BOOL",
+				"description": "Start the motion at rising edge"
+			},
+			{
+				"name": "ContinuousUpdate",
+				"type": "BOOL",
+				"description": "See 2.4.6 The input 'ContinuousUpdate'"
+			},
+			{
+				"name": "Velocity",
+				"type": "REAL",
+				"description": "Value of the maximum velocity [u/s]. Can be a signed value."
+			},
+			{
+				"name": "Acceleration",
+				"type": "REAL",
+				"description": "Value of the acceleration (increasing energy of the motor) [u/s2]"
+			},
+			{
+				"name": "Deceleration",
+				"type": "REAL",
+				"description": "Value of the deceleration (decreasing energy of the motor) [u/s2]"
+			},
+			{
+				"name": "Jerk",
+				"type": "REAL",
+				"description": "Value of the Jerk [u/s3]"
+			},
+			{
+				"name": "Direction",
+				"type": "MC:DIRECTION",
+				"description": "Enum type (1-of-3 values: mcPositiveDirection, mcNegativeDirection, andMcCurrenDiected. Note: shortest way not applicable)"
+			},
+			{
+				"name": "BufferMode",
+				"type": "MC_BUFFER_MODE",
+				"description": "Defines the chronological sequence of the FB. See 2.4.2 Aborting versus Buffered modes"
+			}
+		],
+		"outputs": [
+			{
+				"name": "InVelocity",
+				"type": "BOOL",
+				"description": "Commanded velocity reached"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Active",
+				"type": "BOOL",
+				"description": "Indicates that the FB has control on the axis"
+			},
+			{
+				"name": "CommandAborted",
+				"type": "BOOL",
+				"description": "'Command' is aborted by another command"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Axis",
+				"type": "AXIS_REF",
+				"description": "Reference to the axis"
+			}
+		],
+		"notes": [
+			"To stop the motion, the FB has to be interrupted by another FB issuing a new commandThe signal 'InVelocity' has to be reset when the block is aborted by another block.Negative velocity * negative direction = positive velocityIn combination with MC_MoveSuperimposed, the output 'InVelocity' is SET as long as the contribution of this FB (MC_MoveVelocity) to the set velocity is equal to the commanded velocity of this FB."
+		],
+		"text": "MC_MoveVelocity\nThis Function Block commands a never ending controlled motion at a specified velocity.\ninput Execute BOOL Start the motion at rising edge\ninput ContinuousUpdate BOOL See 2.4.6 The input 'ContinuousUpdate'\ninput Velocity REAL Value of the maximum velocity [u/s]. Can be a signed value.\ninput Acceleration REAL Value of the acceleration (increasing energy of the motor) [u/s2]\ninput Deceleration REAL Value of the deceleration (decreasing energy of the motor) [u/s2]\ninput Jerk REAL Value of the Jerk [u/s3]\ninput Direction MC:DIRECTION Enum type (1-of-3 values: mcPositiveDirection, mcNegativeDirection, andMcCurrenDiected. Note: shortest way not applicable)\ninput BufferMode MC_BUFFER_MODE Defines the chronological sequence of the FB. See 2.4.2 Aborting versus Buffered modes\noutput InVelocity BOOL Commanded velocity reached\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Active BOOL Indicates that the FB has control on the axis\noutput CommandAborted BOOL 'Command' is aborted by another command\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\ninout Axis AXIS_REF Reference to the axis"
+	},
+	{
+		"name": "MC_MoveContinuousAbsolute",
+		"type": "function_block",
+		"description": "This Function Block commands a controlled motion to a specified absolute position ending with the specified velocity.",
+		"inputs": [
+			{
+				"name": "Execute",
+				"type": "BOOL",
+				"description": "Start the motion at rising edge"
+			},
+			{
+				"name": "ContinuousUpdate",
+				"type": "BOOL",
+				"description": "See 2.4.6 The input 'ContinuousUpdate'"
+			},
+			{
+				"name": "Position",
+				"type": "REAL",
+				"description": "Commanded position for the motion (in technical unit [u]) (negative or positive)"
+			},
+			{
+				"name": "EndVelocity",
+				"type": "REAL",
+				"description": "Value of the end velocity [u/s]. Signed value"
+			},
+			{
+				"name": "Velocity",
+				"type": "REAL",
+				"description": "Value of the maximum velocity [u/s]"
+			},
+			{
+				"name": "Acceleration",
+				"type": "REAL",
+				"description": "Value of the acceleration [u/s²]"
+			},
+			{
+				"name": "Deceleration",
+				"type": "REAL",
+				"description": "Value of the deceleration [u/s²]"
+			},
+			{
+				"name": "Jerk",
+				"type": "REAL",
+				"description": "Value of the Jerk [u/s³]"
+			},
+			{
+				"name": "Direction",
+				"type": "MC_DIRECTION",
+				"description": "Enum type (1-of-4 values: mcPositiveDirection, mcNegativeDirection, mcCurrentDirection and mcShortestWay"
+			},
+			{
+				"name": "BufferMode",
+				"type": "MC_BUFFER_MODE",
+				"description": "Defines the chronological sequence of the FB. See 2.4.2 Aborting versus Buffered modes"
+			}
+		],
+		"outputs": [
+			{
+				"name": "InEndVelocity",
+				"type": "BOOL",
+				"description": "Commanded distance reached and running at requested end velocity"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Active",
+				"type": "BOOL",
+				"description": "Indicates that the FB has control on the axis"
+			},
+			{
+				"name": "CommandAborted",
+				"type": "BOOL",
+				"description": "'Command' is aborted by another command"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Axis",
+				"type": "AXIS_REF",
+				"description": "Reference to the axis"
+			}
+		],
+		"notes": [
+			"If the commanded position is reached and no new motion command is put into the buffer, the axis continues to run with the specified 'EndVelocity'.State 'ContinuousMotion' (meaning: it will not stop by itself).This FB can be replaced by the combination of MC_MoveAbsolute and MC_MoveVelocity if BufferMode is implemented on those FBs"
+		],
+		"text": "MC_MoveContinuousAbsolute\nThis Function Block commands a controlled motion to a specified absolute position ending with the specified velocity.\ninput Execute BOOL Start the motion at rising edge\ninput ContinuousUpdate BOOL See 2.4.6 The input 'ContinuousUpdate'\ninput Position REAL Commanded position for the motion (in technical unit [u]) (negative or positive)\ninput EndVelocity REAL Value of the end velocity [u/s]. Signed value\ninput Velocity REAL Value of the maximum velocity [u/s]\ninput Acceleration REAL Value of the acceleration [u/s²]\ninput Deceleration REAL Value of the deceleration [u/s²]\ninput Jerk REAL Value of the Jerk [u/s³]\ninput Direction MC_DIRECTION Enum type (1-of-4 values: mcPositiveDirection, mcNegativeDirection, mcCurrentDirection and mcShortestWay\ninput BufferMode MC_BUFFER_MODE Defines the chronological sequence of the FB. See 2.4.2 Aborting versus Buffered modes\noutput InEndVelocity BOOL Commanded distance reached and running at requested end velocity\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Active BOOL Indicates that the FB has control on the axis\noutput CommandAborted BOOL 'Command' is aborted by another command\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\ninout Axis AXIS_REF Reference to the axis"
+	},
+	{
+		"name": "MC_MoveContinuousRelative",
+		"type": "function_block",
+		"description": "This Function Block commands a controlled motion of a specified relative distance ending with the specified velocity.",
+		"inputs": [
+			{
+				"name": "Execute",
+				"type": "BOOL",
+				"description": "Start the motion at rising edge"
+			},
+			{
+				"name": "ContinuousUpdate",
+				"type": "BOOL",
+				"description": "See 2.4.6 The input 'ContinuousUpdate'"
+			},
+			{
+				"name": "Distance",
+				"type": "REAL",
+				"description": "Relative distance for the motion [u]"
+			},
+			{
+				"name": "EndVelocity",
+				"type": "REAL",
+				"description": "Value of the end velocity [u/s]. Signed value"
+			},
+			{
+				"name": "Velocity",
+				"type": "REAL",
+				"description": "Value of the maximum velocity [u/s]"
+			},
+			{
+				"name": "Acceleration",
+				"type": "REAL",
+				"description": "Value of the acceleration [u/s2]"
+			},
+			{
+				"name": "Deceleration",
+				"type": "REAL",
+				"description": "Value of the deceleration [u/s2]"
+			},
+			{
+				"name": "Jerk",
+				"type": "REAL",
+				"description": "Value of the Jerk [u/s3]"
+			},
+			{
+				"name": "BufferMode",
+				"type": "MC_BUFFER_MODE",
+				"description": "Defines the chronological sequence of the FB. See 2.4.2 Aborting versus Buffered modes"
+			}
+		],
+		"outputs": [
+			{
+				"name": "InEndVelocity",
+				"type": "BOOL",
+				"description": "Commanded distance reached and running at requested end velocity"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Active",
+				"type": "BOOL",
+				"description": "Indicates that the FB has control on the axis"
+			},
+			{
+				"name": "CommandAborted",
+				"type": "BOOL",
+				"description": "'Command' is aborted by another command"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Axis",
+				"type": "AXIS_REF",
+				"description": "Reference to the axis"
+			}
+		],
+		"notes": [
+			"If the commanded position is reached and no new motion command is put into the buffer, the axis continues to run with the specified 'EndVelocity'.State 'ContinuousMotion' (meaning: it will not stop by itself).This FB is specified here for systems without the support for the 'BufferMode'.This FB can be replaced by the combination of MC_MoveAbsolute and MC_MoveVelocity if BufferMode is implemented on those FBs"
+		],
+		"text": "MC_MoveContinuousRelative\nThis Function Block commands a controlled motion of a specified relative distance ending with the specified velocity.\ninput Execute BOOL Start the motion at rising edge\ninput ContinuousUpdate BOOL See 2.4.6 The input 'ContinuousUpdate'\ninput Distance REAL Relative distance for the motion [u]\ninput EndVelocity REAL Value of the end velocity [u/s]. Signed value\ninput Velocity REAL Value of the maximum velocity [u/s]\ninput Acceleration REAL Value of the acceleration [u/s2]\ninput Deceleration REAL Value of the deceleration [u/s2]\ninput Jerk REAL Value of the Jerk [u/s3]\ninput BufferMode MC_BUFFER_MODE Defines the chronological sequence of the FB. See 2.4.2 Aborting versus Buffered modes\noutput InEndVelocity BOOL Commanded distance reached and running at requested end velocity\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Active BOOL Indicates that the FB has control on the axis\noutput CommandAborted BOOL 'Command' is aborted by another command\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\ninout Axis AXIS_REF Reference to the axis"
+	},
+	{
+		"name": "MC_TorqueControl",
+		"type": "function_block",
+		"description": "This Function Block continuously exerts a torque or force of the specified magnitude. This magnitude is approached using a defined ramp ('TorqueRamp'), and the Function Block sets the 'InTorque' output if the commanded torque level is reached. This function block is applicable for force and torque. When there is no external load, force is applicable. Positive torque is in the positive direction of velocity.",
+		"inputs": [
+			{
+				"name": "Execute",
+				"type": "BOOL",
+				"description": "Starts the motion on a rising edge"
+			},
+			{
+				"name": "ContinuousUpdate",
+				"type": "BOOL",
+				"description": "See 2.4.6 The input 'ContinuousUpdate'"
+			},
+			{
+				"name": "Torque",
+				"type": "REAL",
+				"description": "Value of the torque (Torque or force in technical unit [u])"
+			},
+			{
+				"name": "TorqueRamp",
+				"type": "REAL",
+				"description": "The maximum time derivative of the set value of the torque or force (in technical unit per sec. [u/s])"
+			},
+			{
+				"name": "Velocity",
+				"type": "REAL",
+				"description": "Absolute value of the maximum velocity."
+			},
+			{
+				"name": "Acceleration",
+				"type": "REAL",
+				"description": "Value of the maximum acceleration (acceleration is appli-cable with same sign of torque and velocity)"
+			},
+			{
+				"name": "Deceleration",
+				"type": "REAL",
+				"description": "Value of the maximum deceleration (deceleration is appli-cable with opposite signs of torque and velocity)"
+			},
+			{
+				"name": "Jerk",
+				"type": "REAL",
+				"description": "Value of the maximum jerk"
+			},
+			{
+				"name": "Direction",
+				"type": "MC_DIRECTION",
+				"description": "Enum type (1 of 2 values: mcPositiveDirection, mcNega-tiveDirection or mcCurrentDirection). Specifies the direc-tion of the torque. (Note: Torque input can be signed value)."
+			},
+			{
+				"name": "BufferMode",
+				"type": "MC_BUFFER_MODE",
+				"description": "Defines the chronological sequence of the FB. See 2.4.2 Aborting versus Buffered modes"
+			}
+		],
+		"outputs": [
+			{
+				"name": "InTorque",
+				"type": "BOOL",
+				"description": "Setpoint value of torque or force equals the commanded value"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Active",
+				"type": "BOOL",
+				"description": "Indicates that the FB has control on the axis"
+			},
+			{
+				"name": "CommandAborted",
+				"type": "BOOL",
+				"description": "'Command' is aborted by another command"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Axis",
+				"type": "AXIS_REF",
+				"description": "Reference to the axis"
+			}
+		],
+		"notes": [
+			"The movement is limited by velocity, acceleration / deceleration, and jerk, or by the value of the torque, de-pending on the mechanical circumstances.",
+			"Specific additional tests are outside this FB. For instance, checking on the traveled distance could be done via tracing the actual positions during the action.",
+			"'Velocity' is a limit input and is always a positive value. The direction is dependent on the torque and load.",
+			"The axis ceases to be in 'Torque' control mode when any motion control (not administrative) Function Block is accepted on the same axis."
+		],
+		"text": "MC_TorqueControl\nThis Function Block continuously exerts a torque or force of the specified magnitude. This magnitude is approached using a defined ramp ('TorqueRamp'), and the Function Block sets the 'InTorque' output if the commanded torque level is reached. This function block is applicable for force and torque. When there is no external load, force is applicable. Positive torque is in the positive direction of velocity.\ninput Execute BOOL Starts the motion on a rising edge\ninput ContinuousUpdate BOOL See 2.4.6 The input 'ContinuousUpdate'\ninput Torque REAL Value of the torque (Torque or force in technical unit [u])\ninput TorqueRamp REAL The maximum time derivative of the set value of the torque or force (in technical unit per sec. [u/s])\ninput Velocity REAL Absolute value of the maximum velocity.\ninput Acceleration REAL Value of the maximum acceleration (acceleration is appli-cable with same sign of torque and velocity)\ninput Deceleration REAL Value of the maximum deceleration (deceleration is appli-cable with opposite signs of torque and velocity)\ninput Jerk REAL Value of the maximum jerk\ninput Direction MC_DIRECTION Enum type (1 of 2 values: mcPositiveDirection, mcNega-tiveDirection or mcCurrentDirection). Specifies the direc-tion of the torque. (Note: Torque input can be signed value).\ninput BufferMode MC_BUFFER_MODE Defines the chronological sequence of the FB. See 2.4.2 Aborting versus Buffered modes\noutput InTorque BOOL Setpoint value of torque or force equals the commanded value\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Active BOOL Indicates that the FB has control on the axis\noutput CommandAborted BOOL 'Command' is aborted by another command\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\ninout Axis AXIS_REF Reference to the axis"
+	},
+	{
+		"name": "MC_PositionProfile",
+		"type": "function_block",
+		"description": "This Function Block commands a time-position locked motion profile",
+		"inputs": [
+			{
+				"name": "Execute",
+				"type": "BOOL",
+				"description": "Start the motion at rising edge"
+			},
+			{
+				"name": "ContinuousUpdate",
+				"type": "BOOL",
+				"description": "See 2.4.6 The input 'ContinuousUpdate'"
+			},
+			{
+				"name": "TimeScale",
+				"type": "REAL",
+				"description": "Overall time scaling factor of the profile"
+			},
+			{
+				"name": "PositionScale",
+				"type": "REAL",
+				"description": "Overall Position scaling factor"
+			},
+			{
+				"name": "Offset",
+				"type": "REAL",
+				"description": "Overall offset for profile [u]"
+			},
+			{
+				"name": "BufferMode",
+				"type": "MC_BUFFER_MODE",
+				"description": "Defines the chronological sequence of the FB. See 2.4.2 Aborting versus Buffered modes"
+			}
+		],
+		"outputs": [
+			{
+				"name": "Done",
+				"type": "BOOL",
+				"description": "Profile completed"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Active",
+				"type": "BOOL",
+				"description": "Indicates that the FB has control on the axis"
+			},
+			{
+				"name": "CommandAborted",
+				"type": "BOOL",
+				"description": "'Command' is aborted by another command"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Axis",
+				"type": "AXIS_REF",
+				"description": "Reference to the axis"
+			},
+			{
+				"name": "TimePosition",
+				"type": "MC_TP_REF",
+				"description": "Reference to Time / Position. Description - see note below"
+			}
+		],
+		"notes": [
+			"• MC_TP_REF is a supplier specific data type. An example for this datatype is given below: • The content of a Time/Position pair may be expressed in DeltaTime/Pos, where Delta could be the differ-ence in time between two successive points. • TYPE MC_TP : STRUCT DeltaTime : TIME; Position : REAL; ENDSTRUCT; END_TYPE • TYPE MC_TP_REF : STRUCT NumberOfPairs : WORD; IsAbsolute : BOOL; MC_TP_Array : ARRAY [",
+			".N] OF MC_TP; END_STRICT; END_TYPE • This functionality does not mean it runs one profile over and over again: it can switch between different pro-files • Alternatively to this FB, the FB MC_CamIn coupled to a virtual master can be used"
+		],
+		"text": "MC_PositionProfile\nThis Function Block commands a time-position locked motion profile\ninput Execute BOOL Start the motion at rising edge\ninput ContinuousUpdate BOOL See 2.4.6 The input 'ContinuousUpdate'\ninput TimeScale REAL Overall time scaling factor of the profile\ninput PositionScale REAL Overall Position scaling factor\ninput Offset REAL Overall offset for profile [u]\ninput BufferMode MC_BUFFER_MODE Defines the chronological sequence of the FB. See 2.4.2 Aborting versus Buffered modes\noutput Done BOOL Profile completed\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Active BOOL Indicates that the FB has control on the axis\noutput CommandAborted BOOL 'Command' is aborted by another command\noutput Error BOOL Signals that an error has occurred within the Function block\noutput ErrorID WORD Error identification\ninout Axis AXIS_REF Reference to the axis\ninout TimePosition MC_TP_REF Reference to Time / Position. Description - see note below"
+	},
+	{
+		"name": "MC_VelocityProfile",
+		"type": "function_block",
+		"description": "This Function Block commands a time-velocity locked motion profile. The velocity in the final element in the profile should be maintained. The state remains 'ContinuousMotion'.",
+		"inputs": [
+			{
+				"name": "Execute",
+				"type": "BOOL",
+				"description": "Start the motion at rising edge"
+			},
+			{
+				"name": "ContinuousUpdate",
+				"type": "BOOL",
+				"description": "See 2.4.6 The input 'ContinuousUpdate'"
+			},
+			{
+				"name": "TimeScale",
+				"type": "REAL",
+				"description": "Overall time scaling factor of the profile"
+			},
+			{
+				"name": "VelocityScale",
+				"type": "REAL",
+				"description": "Overall velocity scaling factor of the profile"
+			},
+			{
+				"name": "Offset",
+				"type": "REAL",
+				"description": "Overall offset for profile [u/s]"
+			},
+			{
+				"name": "BufferMode",
+				"type": "MC_BUFFER_MODE",
+				"description": "Defines the chronological sequence of the FB. See 2.4.2 Aborting versus Buffered modes"
+			}
+		],
+		"outputs": [
+			{
+				"name": "ProfileCompleted",
+				"type": "BOOL",
+				"description": "End of profile reached"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Active",
+				"type": "BOOL",
+				"description": "Indicates that the FB has control on the axis"
+			},
+			{
+				"name": "CommandAborted",
+				"type": "BOOL",
+				"description": "'Command' is aborted by another command"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Axis",
+				"type": "AXIS_REF",
+				"description": "Reference to the axis"
+			},
+			{
+				"name": "TimeVelocity",
+				"type": "MC_TV_REF",
+				"description": "Reference to Time / Velocity. Description - see note below"
+			}
+		],
+		"notes": [
+			"• MC_TV_REF is a supplier specific datatype. An example for this datatype is given here below: • The content of Time/Velocity pair may be expressed in DeltaTime/Velocity, where Delta could be the difference in time between two successive points. Velocity can be a signed value. • TYPE MC_TV : STRUCT DeltaTime : TIME; Velocity : REAL; ENDSTRUCT; END_TYPE • TYPE MC_TV_REF : STRUCT NumberOfPairs : WORD; MC_TV_Array : ARRAY [",
+			".N] of MC_TV; END_STRICT; END_TYPE • This functionality does not mean it runs one profile over and over again: it can switch between different profiles • Alternatively to this FB, the CAM FB coupled to a virtual master can be used"
+		],
+		"text": "MC_VelocityProfile\nThis Function Block commands a time-velocity locked motion profile. The velocity in the final element in the profile should be maintained. The state remains 'ContinuousMotion'.\ninput Execute BOOL Start the motion at rising edge\ninput ContinuousUpdate BOOL See 2.4.6 The input 'ContinuousUpdate'\ninput TimeScale REAL Overall time scaling factor of the profile\ninput VelocityScale REAL Overall velocity scaling factor of the profile\ninput Offset REAL Overall offset for profile [u/s]\ninput BufferMode MC_BUFFER_MODE Defines the chronological sequence of the FB. See 2.4.2 Aborting versus Buffered modes\noutput ProfileCompleted BOOL End of profile reached\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Active BOOL Indicates that the FB has control on the axis\noutput CommandAborted BOOL 'Command' is aborted by another command\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\ninout Axis AXIS_REF Reference to the axis\ninout TimeVelocity MC_TV_REF Reference to Time / Velocity. Description - see note below"
+	},
+	{
+		"name": "MC_AccelerationProfile",
+		"type": "function_block",
+		"description": "This Function Block commands a time-acceleration locked motion profile. After finalizing the acceleration pro- file, the acceleration goes to 0 (and typically the final velocity is maintained). It stays in the state 'ContinuousMo- tion'.",
+		"inputs": [
+			{
+				"name": "Execute",
+				"type": "BOOL",
+				"description": "Start the motion at rising edge"
+			},
+			{
+				"name": "ContinuousUpdate",
+				"type": "BOOL",
+				"description": "See 2.4.6 The input 'ContinuousUpdate'"
+			},
+			{
+				"name": "TimeScale",
+				"type": "REAL",
+				"description": "Overall time scaling factor of the profile"
+			},
+			{
+				"name": "AccelerationScale",
+				"type": "REAL",
+				"description": "Scale factor for acceleration amplitude"
+			},
+			{
+				"name": "Offset",
+				"type": "REAL",
+				"description": "Overall offset for profile [u/s2]"
+			},
+			{
+				"name": "BufferMode",
+				"type": "MC_BUFFER_MODE",
+				"description": "Defines the chronological sequence of the FB. See 2.4.2 Aborting versus Buffered modes"
+			}
+		],
+		"outputs": [
+			{
+				"name": "ProfileCompleted",
+				"type": "BOOL",
+				"description": "End of profile reached"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Active",
+				"type": "BOOL",
+				"description": "Indicates that the FB has control on the axis"
+			},
+			{
+				"name": "CommandAborted",
+				"type": "BOOL",
+				"description": "'Command' is aborted by another command"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Axis",
+				"type": "AXIS_REF",
+				"description": "Reference to the axis"
+			},
+			{
+				"name": "TimeAcceleration",
+				"type": "MC_TA_REF",
+				"description": "Reference to Time / Acceleration. Description - see note below"
+			}
+		],
+		"notes": [
+			"• MC_TA_REF is a supplier specific datatype. An example for this datatype is given here below: • The content of Time/Acceleration pair may be expressed in DeltaTime/Acceleration, where Delta could be the difference in time between two successive points. • TYPE MC_TA : STRUCT DeltaTime : TIME; Acceleration : REAL; ENDSTRUCT; END_TYPE • TYPE MC_TA_REF : STRUCT NumberOfPairs : WORD; MC_TA Array : ARRAY [",
+			".N] of MC_TA; ENDSTRUCT; END_TYPE • alternatively to this FB, the CAM FB coupled to a virtual master can be used"
+		],
+		"text": "MC_AccelerationProfile\nThis Function Block commands a time-acceleration locked motion profile. After finalizing the acceleration pro- file, the acceleration goes to 0 (and typically the final velocity is maintained). It stays in the state 'ContinuousMo- tion'.\ninput Execute BOOL Start the motion at rising edge\ninput ContinuousUpdate BOOL See 2.4.6 The input 'ContinuousUpdate'\ninput TimeScale REAL Overall time scaling factor of the profile\ninput AccelerationScale REAL Scale factor for acceleration amplitude\ninput Offset REAL Overall offset for profile [u/s2]\ninput BufferMode MC_BUFFER_MODE Defines the chronological sequence of the FB. See 2.4.2 Aborting versus Buffered modes\noutput ProfileCompleted BOOL End of profile reached\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Active BOOL Indicates that the FB has control on the axis\noutput CommandAborted BOOL 'Command' is aborted by another command\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\ninout Axis AXIS_REF Reference to the axis\ninout TimeAcceleration MC_TA_REF Reference to Time / Acceleration. Description - see note below"
+	},
+	{
+		"name": "MC_SetPosition",
+		"type": "function_block",
+		"description": "This Function Block shifts the coordinate system of an axis by manipulating both the set-point position as well as the actual position of an axis with the same value without any movement caused. (Re-calibration with same following error). This can be used for instance for a reference situation. This Function Block can also be used during motion without changing the commanded position, which is now positioned in the shifted coordinate system.",
+		"inputs": [
+			{
+				"name": "Execute",
+				"type": "BOOL",
+				"description": "Start setting position in axis"
+			},
+			{
+				"name": "Position",
+				"type": "REAL",
+				"description": "Position unit [u] (Means ‘Distance’ if ‘Relative’=TRUE)"
+			},
+			{
+				"name": "Relative",
+				"type": "BOOL",
+				"description": "‘Relative’ distance if True, ‘Absolute’ position if False (= Default)"
+			},
+			{
+				"name": "ExecutionMode",
+				"type": "MC_EXECUTION_MODE",
+				"description": "ENUM. Defines the chronological sequence of the FB. mcImmediately - the functionality is immediately valid and may influence the on-going motion but not the state (note: is the default behaviour) mcQueued - Same functionality as buffer mode ‘Buffered’"
+			}
+		],
+		"outputs": [
+			{
+				"name": "Done",
+				"type": "BOOL",
+				"description": "‘Position’ has new value"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Axis",
+				"type": "AXIS_REF",
+				"description": "Reference to the axis"
+			}
+		],
+		"notes": [
+			"‘Relative’ means that ‘Position’ is added to the actual position value of the axis at the time of execution. This results in a recalibration by a specified distance. ‘Absolute’ means that the actual position value of the axis is set to the value specified in the ‘Position’ parameter."
+		],
+		"text": "MC_SetPosition\nThis Function Block shifts the coordinate system of an axis by manipulating both the set-point position as well as the actual position of an axis with the same value without any movement caused. (Re-calibration with same following error). This can be used for instance for a reference situation. This Function Block can also be used during motion without changing the commanded position, which is now positioned in the shifted coordinate system.\ninput Execute BOOL Start setting position in axis\ninput Position REAL Position unit [u] (Means ‘Distance’ if ‘Relative’=TRUE)\ninput Relative BOOL ‘Relative’ distance if True, ‘Absolute’ position if False (= Default)\ninput ExecutionMode MC_EXECUTION_MODE ENUM. Defines the chronological sequence of the FB. mcImmediately - the functionality is immediately valid and may influence the on-going motion but not the state (note: is the default behaviour) mcQueued - Same functionality as buffer mode ‘Buffered’\noutput Done BOOL ‘Position’ has new value\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\ninout Axis AXIS_REF Reference to the axis"
+	},
+	{
+		"name": "MC_SetOverride",
+		"type": "function_block",
+		"description": "This Function Block sets the values of override for the whole axis, and all functions that are working on that axis. The override parameters contribute as a factor to the calculation of the commanded velocity, acceleration and jerk of the motion.",
+		"inputs": [
+			{
+				"name": "Enable",
+				"type": "BOOL",
+				"description": "If SET, it writes the value of the override factor continuously. If RESET it should keep the last value."
+			},
+			{
+				"name": "VelFactor",
+				"type": "REAL",
+				"description": "New override factor for the velocity"
+			},
+			{
+				"name": "AccFactor",
+				"type": "REAL",
+				"description": "New override factor for the acceleration/deceleration"
+			},
+			{
+				"name": "JerkFactor",
+				"type": "REAL",
+				"description": "New override factor for the jerk"
+			}
+		],
+		"outputs": [
+			{
+				"name": "Enabled",
+				"type": "BOOL",
+				"description": "Signals that the override factor(s) is (are) set successfully"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Axis",
+				"type": "AXIS_REF",
+				"description": "Reference to the axis"
+			}
+		],
+		"notes": [
+			"The Input AccFactor acts on positive and negative acceleration (deceleration).",
+			"This Function Block sets the factor. The override factor is valid until a new override is set.",
+			"The default values of the override factor are",
+			"The value of the overrides can be between",
+			"0 and",
+			"The behavior of values >",
+			"0 is vendor specific. Values <",
+			"0 are not allowed. The value",
+			"0 is not allowed for ‘AccFactor’ and ‘JerkFactor’.",
+			"The value",
+			"0 set to the ‘VelFactor’ stops the axis without bringing it to the state ‘Standstill’.",
+			"Override does not act on slave axes. (Axes in the state synchronized motion).",
+			"The Function Block does not influence the state diagram of the axis.",
+			"‘VelFactor’ can be changed at any time and acts directly on the ongoing motion.",
+			"If in ‘Discrete’ motion, reducing the ‘AccFactor’ and/or ‘JerkFactor’ can lead to a position overshoot – a possible cause of damage",
+			"Activating this Function Block on an axis that is under control of MC_PositionProfile, MC_VelocityProfile, or MC_AccelerationProfile, is vendor specific."
+		],
+		"text": "MC_SetOverride\nThis Function Block sets the values of override for the whole axis, and all functions that are working on that axis. The override parameters contribute as a factor to the calculation of the commanded velocity, acceleration and jerk of the motion.\ninput Enable BOOL If SET, it writes the value of the override factor continuously. If RESET it should keep the last value.\ninput VelFactor REAL New override factor for the velocity\ninput AccFactor REAL New override factor for the acceleration/deceleration\ninput JerkFactor REAL New override factor for the jerk\noutput Enabled BOOL Signals that the override factor(s) is (are) set successfully\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\ninout Axis AXIS_REF Reference to the axis"
+	},
+	{
+		"name": "MC_ReadDigitalInput",
+		"type": "function_block",
+		"description": "This Function Block gives access to the value of the input, referenced by the datatype MC_INPUT_REF. It provides the value of the referenced input (BOOL)",
+		"inputs": [
+			{
+				"name": "Enable",
+				"type": "BOOL",
+				"description": "Get the value of the selected input signal continuously while enabled"
+			},
+			{
+				"name": "InputNumber",
+				"type": "INT",
+				"description": "Selects the input. Can be part of MC_INPUT_REF, if only one single input is referenced."
+			}
+		],
+		"outputs": [
+			{
+				"name": "Valid",
+				"type": "BOOL",
+				"description": "A valid output is available at the FB"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			},
+			{
+				"name": "Value",
+				"type": "BOOL",
+				"description": "The value of the selected input signal"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Input",
+				"type": "MC_INPUT_REF",
+				"description": "Reference to the input signal source"
+			}
+		],
+		"notes": [
+			"It is not guaranteed that the digital signal will be seen by the FB: a short pulse on the digital input could be over before the next Function Block cycle occurs."
+		],
+		"text": "MC_ReadDigitalInput\nThis Function Block gives access to the value of the input, referenced by the datatype MC_INPUT_REF. It provides the value of the referenced input (BOOL)\ninput Enable BOOL Get the value of the selected input signal continuously while enabled\ninput InputNumber INT Selects the input. Can be part of MC_INPUT_REF, if only one single input is referenced.\noutput Valid BOOL A valid output is available at the FB\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\noutput Value BOOL The value of the selected input signal\ninout Input MC_INPUT_REF Reference to the input signal source"
+	},
+	{
+		"name": "MC_ReadDigitalOutput",
+		"type": "function_block",
+		"description": "This Function Block provides access to the value of a digital output, referenced by the datatype MC_OUTPUT_REF. It provides the value of the referenced output (BOOL).",
+		"inputs": [
+			{
+				"name": "Enable",
+				"type": "BOOL",
+				"description": "Get the value of the selected output signal continuously while enabled"
+			},
+			{
+				"name": "OutputNumber",
+				"type": "INT",
+				"description": "Selects the output. Can be part of MC_OUTPUT_REF, if only one single output is referenced."
+			}
+		],
+		"outputs": [
+			{
+				"name": "Valid",
+				"type": "BOOL",
+				"description": "A valid output is available at the FB"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			},
+			{
+				"name": "Value",
+				"type": "BOOL",
+				"description": "The value of the selected output signal"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Output",
+				"type": "MC_OUTPUT_REF",
+				"description": "Reference to the signal outputs"
+			}
+		],
+		"notes": [
+			"It is not guaranteed that the digital signal will be seen by the FB: a short pulse on the digital output could be over before the next Function Block cycle occurs."
+		],
+		"text": "MC_ReadDigitalOutput\nThis Function Block provides access to the value of a digital output, referenced by the datatype MC_OUTPUT_REF. It provides the value of the referenced output (BOOL).\ninput Enable BOOL Get the value of the selected output signal continuously while enabled\ninput OutputNumber INT Selects the output. Can be part of MC_OUTPUT_REF, if only one single output is referenced.\noutput Valid BOOL A valid output is available at the FB\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Error BOOL Signals that an error has occurred within the the Function Block\noutput ErrorID WORD Error identification\noutput Value BOOL The value of the selected output signal\ninout Output MC_OUTPUT_REF Reference to the signal outputs"
+	},
+	{
+		"name": "MC_WriteDigitalOutput",
+		"type": "function_block",
+		"description": "This Function Block writes a value to the output referenced by the argument 'Output' once (with rising edge of Exe-cute).",
+		"inputs": [
+			{
+				"name": "Execute",
+				"type": "BOOL",
+				"description": "Write the value of the selected output"
+			},
+			{
+				"name": "OutputNumber",
+				"type": "INT",
+				"description": "Selects the output. Can be part of MC_OUTPUT_REF, if only one single input is referenced."
+			},
+			{
+				"name": "Value",
+				"type": "BOOL",
+				"description": "The value of the selected output"
+			},
+			{
+				"name": "ExecutionMode",
+				"type": "MC_EXECUTION_MODE",
+				"description": "Defines the chronological sequence of the FB.mClImmediately - the functionality is immediately valid and may influence the on-going motion but not the state (note: is the default behaviour)mcQueued - Same functionality as buffer mode 'Buffered'"
+			}
+		],
+		"outputs": [
+			{
+				"name": "Done",
+				"type": "BOOL",
+				"description": "Writing of the output signal value is done"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Output",
+				"type": "MC_OUTPUT_REF",
+				"description": "Reference to the signal output"
+			}
+		],
+		"notes": [
+			"-"
+		],
+		"text": "MC_WriteDigitalOutput\nThis Function Block writes a value to the output referenced by the argument 'Output' once (with rising edge of Exe-cute).\ninput Execute BOOL Write the value of the selected output\ninput OutputNumber INT Selects the output. Can be part of MC_OUTPUT_REF, if only one single input is referenced.\ninput Value BOOL The value of the selected output\ninput ExecutionMode MC_EXECUTION_MODE Defines the chronological sequence of the FB.mClImmediately - the functionality is immediately valid and may influence the on-going motion but not the state (note: is the default behaviour)mcQueued - Same functionality as buffer mode 'Buffered'\noutput Done BOOL Writing of the output signal value is done\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\ninout Output MC_OUTPUT_REF Reference to the signal output"
+	},
+	{
+		"name": "MC_ReadActualPosition",
+		"type": "function_block",
+		"description": "This Function Block returns the actual position.",
+		"inputs": [
+			{
+				"name": "Enable",
+				"type": "BOOL",
+				"description": "Get the value of the parameter continuously while enabled"
+			}
+		],
+		"outputs": [
+			{
+				"name": "Valid",
+				"type": "BOOL",
+				"description": "A valid output is available at the FB"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorCodeID",
+				"type": "WORD",
+				"description": "Error identification"
+			},
+			{
+				"name": "Position",
+				"type": "REAL",
+				"description": "New absolute position (in axis' unit [u])"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Axis",
+				"type": "AXIS_REF",
+				"description": "Reference to the axis"
+			}
+		],
+		"notes": [],
+		"text": "MC_ReadActualPosition\nThis Function Block returns the actual position.\ninput Enable BOOL Get the value of the parameter continuously while enabled\noutput Valid BOOL A valid output is available at the FB\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorCodeID WORD Error identification\noutput Position REAL New absolute position (in axis' unit [u])\ninout Axis AXIS_REF Reference to the axis"
+	},
+	{
+		"name": "MC_ReadActualVelocity",
+		"type": "function_block",
+		"description": "This Function Block returns the value of the actual velocity as long as ‘Enable’ is set. ‘Valid’ is true when the data-output ‘Velocity’ is valid. If ‘Enable’ is Reset, the data loses its validity, and all outputs are reset, no matter if new data is available.",
+		"inputs": [
+			{
+				"name": "Enable",
+				"type": "BOOL",
+				"description": "Get the value of the parameter continuously while enabled"
+			}
+		],
+		"outputs": [
+			{
+				"name": "Valid",
+				"type": "BOOL",
+				"description": "A valid output is available at the FB"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorCodeID",
+				"type": "WORD",
+				"description": "Error identification"
+			},
+			{
+				"name": "Velocity",
+				"type": "REAL",
+				"description": "The value of the actual velocity (in axis' unit [u/s])"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Axis",
+				"type": "AXIS_REF",
+				"description": "Reference to the axis"
+			}
+		],
+		"notes": [
+			"The output ‘Velocity’ can be a signed value"
+		],
+		"text": "MC_ReadActualVelocity\nThis Function Block returns the value of the actual velocity as long as ‘Enable’ is set. ‘Valid’ is true when the data-output ‘Velocity’ is valid. If ‘Enable’ is Reset, the data loses its validity, and all outputs are reset, no matter if new data is available.\ninput Enable BOOL Get the value of the parameter continuously while enabled\noutput Valid BOOL A valid output is available at the FB\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorCodeID WORD Error identification\noutput Velocity REAL The value of the actual velocity (in axis' unit [u/s])\ninout Axis AXIS_REF Reference to the axis"
+	},
+	{
+		"name": "MC_ReadActualTorque",
+		"type": "function_block",
+		"description": "This Function Block returns the value of the actual torque or force as long as ‘Enable’ is set. ‘Valid’ is true when the data-output ‘Torque’ is valid. If ‘Enable’ is Reset, the data loses its validity, and ‘Valid’ is also reset, no matter if new data is available.",
+		"inputs": [
+			{
+				"name": "Enable",
+				"type": "BOOL",
+				"description": "Get the value of the parameter continuously while enabled"
+			}
+		],
+		"outputs": [
+			{
+				"name": "Valid",
+				"type": "BOOL",
+				"description": "A valid output is available at the FB"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			},
+			{
+				"name": "Torque",
+				"type": "REAL",
+				"description": "The value of the actual torque or force (in technical units)"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Axis",
+				"type": "AXIS_REF",
+				"description": "Reference to the axis"
+			}
+		],
+		"notes": [
+			"The output ‘Torque’ can be a signed value"
+		],
+		"text": "MC_ReadActualTorque\nThis Function Block returns the value of the actual torque or force as long as ‘Enable’ is set. ‘Valid’ is true when the data-output ‘Torque’ is valid. If ‘Enable’ is Reset, the data loses its validity, and ‘Valid’ is also reset, no matter if new data is available.\ninput Enable BOOL Get the value of the parameter continuously while enabled\noutput Valid BOOL A valid output is available at the FB\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\noutput Torque REAL The value of the actual torque or force (in technical units)\ninout Axis AXIS_REF Reference to the axis"
+	},
+	{
+		"name": "MC_ReadStatus",
+		"type": "function_block",
+		"description": "This Function Block returns in detail the status of the state diagram of the selected axis.",
+		"inputs": [
+			{
+				"name": "Enable",
+				"type": "BOOL",
+				"description": "Get the value of the parameter continuously while enabled"
+			}
+		],
+		"outputs": [
+			{
+				"name": "Valid",
+				"type": "BOOL",
+				"description": "A valid set of outputs is available at the FB"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorCodeID",
+				"type": "WORD",
+				"description": "Error identification"
+			},
+			{
+				"name": "ErrorStop",
+				"type": "BOOL",
+				"description": "See state diagram"
+			},
+			{
+				"name": "Disabled",
+				"type": "BOOL",
+				"description": "See state diagram"
+			},
+			{
+				"name": "Stopping",
+				"type": "BOOL",
+				"description": "See state diagram"
+			},
+			{
+				"name": "Homing",
+				"type": "BOOL",
+				"description": "See state diagram"
+			},
+			{
+				"name": "Standstill",
+				"type": "BOOL",
+				"description": "See state diagram"
+			},
+			{
+				"name": "DiscreteMotion",
+				"type": "BOOL",
+				"description": "See state diagram"
+			},
+			{
+				"name": "ContinuousMotion",
+				"type": "BOOL",
+				"description": "See state diagram"
+			},
+			{
+				"name": "SynchronizedMotion",
+				"type": "BOOL",
+				"description": "See state diagram"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Axis",
+				"type": "AXIS_REF",
+				"description": "Reference to the axis"
+			}
+		],
+		"notes": [],
+		"text": "MC_ReadStatus\nThis Function Block returns in detail the status of the state diagram of the selected axis.\ninput Enable BOOL Get the value of the parameter continuously while enabled\noutput Valid BOOL A valid set of outputs is available at the FB\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorCodeID WORD Error identification\noutput ErrorStop BOOL See state diagram\noutput Disabled BOOL See state diagram\noutput Stopping BOOL See state diagram\noutput Homing BOOL See state diagram\noutput Standstill BOOL See state diagram\noutput DiscreteMotion BOOL See state diagram\noutput ContinuousMotion BOOL See state diagram\noutput SynchronizedMotion BOOL See state diagram\ninout Axis AXIS_REF Reference to the axis"
+	},
+	{
+		"name": "MC_ReadMotionState",
+		"type": "function_block",
+		"description": "This Function Block returns in detail the status of the axis with respect to the motion currently in progress.",
+		"inputs": [
+			{
+				"name": "Enable",
+				"type": "BOOL",
+				"description": "Get the value of the parameter continuously while enabled"
+			},
+			{
+				"name": "Source",
+				"type": "MC_SOURCE",
+				"description": "Defines the source of the relevant data: mccOMmandedValue;mcSetValue, mcActualValue."
+			}
+		],
+		"outputs": [
+			{
+				"name": "Valid",
+				"type": "BOOL",
+				"description": "True if a valid set of outputs available"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			},
+			{
+				"name": "ConstantVelocity",
+				"type": "BOOL",
+				"description": "Velocity is constant. Velocity may be 0. For the actual value a window is applicable (window is vendor specific)"
+			},
+			{
+				"name": "Accelerating",
+				"type": "BOOL",
+				"description": "Increasing the absolute value of the velocity"
+			},
+			{
+				"name": "Decelerating",
+				"type": "BOOL",
+				"description": "Decreasing the absolute value of the velocity"
+			},
+			{
+				"name": "DirectionPositive",
+				"type": "BOOL",
+				"description": "Signals that the position is increasing"
+			},
+			{
+				"name": "DirectionNegative",
+				"type": "BOOL",
+				"description": "Signals that the position is decreasing"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Axis",
+				"type": "AXIS_REF",
+				"description": "Reference to the axis"
+			}
+		],
+		"notes": [],
+		"text": "MC_ReadMotionState\nThis Function Block returns in detail the status of the axis with respect to the motion currently in progress.\ninput Enable BOOL Get the value of the parameter continuously while enabled\ninput Source MC_SOURCE Defines the source of the relevant data: mccOMmandedValue;mcSetValue, mcActualValue.\noutput Valid BOOL True if a valid set of outputs available\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Error BOOL Signals that an error has occurred within the Function block\noutput ErrorID WORD Error identification\noutput ConstantVelocity BOOL Velocity is constant. Velocity may be 0. For the actual value a window is applicable (window is vendor specific)\noutput Accelerating BOOL Increasing the absolute value of the velocity\noutput Decelerating BOOL Decreasing the absolute value of the velocity\noutput DirectionPositive BOOL Signals that the position is increasing\noutput DirectionNegative BOOL Signals that the position is decreasing\ninout Axis AXIS_REF Reference to the axis"
+	},
+	{
+		"name": "MC_ReadAxisInfo",
+		"type": "function_block",
+		"description": "This Function Block reads information concerning an axis, like modes, inputs directly related to the axis, and certain status information.",
+		"inputs": [
+			{
+				"name": "Enable",
+				"type": "BOOL",
+				"description": "Get the axis information constantly while enabled"
+			}
+		],
+		"outputs": [
+			{
+				"name": "Valid",
+				"type": "BOOL",
+				"description": "True if a valid set of outputs is available"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			},
+			{
+				"name": "HomeAbsSwitch",
+				"type": "BOOL",
+				"description": "Digital home switch input is active"
+			},
+			{
+				"name": "LimitSwitchPos",
+				"type": "BOOL",
+				"description": "Positive hardware end switch is active"
+			},
+			{
+				"name": "LimitSwitchNeg",
+				"type": "BOOL",
+				"description": "Negative hardware end switch is active"
+			},
+			{
+				"name": "Simulation",
+				"type": "BOOL",
+				"description": "Axis is in simulation mode (e.g. motor is simulated)"
+			},
+			{
+				"name": "CommunicationReady",
+				"type": "BOOL",
+				"description": "“Network” is initialized and ready for communication"
+			},
+			{
+				"name": "ReadyForPowerOn",
+				"type": "BOOL",
+				"description": "Drive is ready to be enabled (power on)"
+			},
+			{
+				"name": "PowerOn",
+				"type": "BOOL",
+				"description": "If TRUE shows that the power stage is switched ON"
+			},
+			{
+				"name": "IsHomed",
+				"type": "BOOL",
+				"description": "The absolute reference position is known for the axis (axis is homed)"
+			},
+			{
+				"name": "AxisWarning",
+				"type": "BOOL",
+				"description": "Warning(s) on the axis is present"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Axis",
+				"type": "AXIS_REF",
+				"description": "Reference to the axis"
+			}
+		],
+		"notes": [],
+		"text": "MC_ReadAxisInfo\nThis Function Block reads information concerning an axis, like modes, inputs directly related to the axis, and certain status information.\ninput Enable BOOL Get the axis information constantly while enabled\noutput Valid BOOL True if a valid set of outputs is available\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\noutput HomeAbsSwitch BOOL Digital home switch input is active\noutput LimitSwitchPos BOOL Positive hardware end switch is active\noutput LimitSwitchNeg BOOL Negative hardware end switch is active\noutput Simulation BOOL Axis is in simulation mode (e.g. motor is simulated)\noutput CommunicationReady BOOL “Network” is initialized and ready for communication\noutput ReadyForPowerOn BOOL Drive is ready to be enabled (power on)\noutput PowerOn BOOL If TRUE shows that the power stage is switched ON\noutput IsHomed BOOL The absolute reference position is known for the axis (axis is homed)\noutput AxisWarning BOOL Warning(s) on the axis is present\ninout Axis AXIS_REF Reference to the axis"
+	},
+	{
+		"name": "MC_ReadAxisError",
+		"type": "function_block",
+		"description": "This Function Block presents general axis errors not relating to the Function Blocks. (for instance axis errors, drive errors, communication errors)",
+		"inputs": [
+			{
+				"name": "Enable",
+				"type": "BOOL",
+				"description": "Get the value of the parameter continuously while enabled"
+			}
+		],
+		"outputs": [
+			{
+				"name": "Valid",
+				"type": "BOOL",
+				"description": "True if a valid output is available at the FB"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorCodeID",
+				"type": "WORD",
+				"description": "Error identification"
+			},
+			{
+				"name": "AxisErrorID",
+				"type": "WORD",
+				"description": "The value of the axis error. These values are vendor specific"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Axis",
+				"type": "AXIS_REF",
+				"description": "Reference to the axis"
+			}
+		],
+		"notes": [
+			"-"
+		],
+		"text": "MC_ReadAxisError\nThis Function Block presents general axis errors not relating to the Function Blocks. (for instance axis errors, drive errors, communication errors)\ninput Enable BOOL Get the value of the parameter continuously while enabled\noutput Valid BOOL True if a valid output is available at the FB\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorCodeID WORD Error identification\noutput AxisErrorID WORD The value of the axis error. These values are vendor specific\ninout Axis AXIS_REF Reference to the axis"
+	},
+	{
+		"name": "MC_Reset",
+		"type": "function_block",
+		"description": "This Function Block makes the transition from the state ‘ErrorStop’ to ‘Standstill’ or ‘Disabled’ by resetting all internal axis-related errors – it does not affect the output of the FB instances.",
+		"inputs": [
+			{
+				"name": "Execute",
+				"type": "BOOL",
+				"description": "Resetss all internal axis-related errors"
+			}
+		],
+		"outputs": [
+			{
+				"name": "Done",
+				"type": "BOOL",
+				"description": "‘Standstill’ or ‘Disabled’ state is reached"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Axis",
+				"type": "AXIS_REF",
+				"description": "Reference to the axis"
+			}
+		],
+		"notes": [
+			"the application of MC_Reset in other states then the state ‘ErrorStop’ is vendor specific"
+		],
+		"text": "MC_Reset\nThis Function Block makes the transition from the state ‘ErrorStop’ to ‘Standstill’ or ‘Disabled’ by resetting all internal axis-related errors – it does not affect the output of the FB instances.\ninput Execute BOOL Resetss all internal axis-related errors\noutput Done BOOL ‘Standstill’ or ‘Disabled’ state is reached\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\ninout Axis AXIS_REF Reference to the axis"
+	},
+	{
+		"name": "MC_DigitalCamSwitch",
+		"type": "function_block",
+		"description": "This Function Block is the analogy to switches on a motor shaft: it commands a group of discrete output bits to switch in analogy to a set of mechanical cam controlled switches connected to an axis. Forward and backward movements are allowed.",
+		"inputs": [
+			{
+				"name": "Enable",
+				"type": "BOOL",
+				"description": "Enables the 'Switches' outputs"
+			},
+			{
+				"name": "EnableMask",
+				"type": "DWORD",
+				"description": "32 bits of BOOL. Enables the different tracks. Least significant data is related to the lowest TrackNumber. With data SET (to '1' resp. TRUE) the related TrackNumber is enabled."
+			},
+			{
+				"name": "ValueSource",
+				"type": "MC_SOURCE",
+				"description": "Defines the source for axis values (e.g. positions): mcSetValue - Synchronization on set value mcActualValue - Synchronization on actual value"
+			}
+		],
+		"outputs": [
+			{
+				"name": "InOperation",
+				"type": "BOOL",
+				"description": "The commanded tracks are enabled"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Axis",
+				"type": "AXIS_REF",
+				"description": "Reference to the axis"
+			},
+			{
+				"name": "Switches",
+				"type": "MC_CAMSWITCH_REF",
+				"description": "Reference to the switching actions."
+			},
+			{
+				"name": "Outputs",
+				"type": "MC_OUTPUT_REF",
+				"description": "Reference to the signal outputs, directly related to the referenced tracks. (max. 32 per function block) (First output = first TrackNumber)"
+			},
+			{
+				"name": "TrackOptions",
+				"type": "MCTRACK_REF",
+				"description": "Reference to structure containing track related properties, e.g. the ON and OFF compensations per output/track."
+			}
+		],
+		"notes": [
+			"• MC_CAMSWITCH_REFis a vendor specific reference to the pattern data. • MC_OUTPUT_REF is a vendor specific structure linked to the (physical) outputs • MCTRACK_REF is a vendor specific structure containing the track properties, e.g. the compensation per track (A track is a set of switches related to one output). It can contain the reference to the output also. • This functionality is sometimes called PLS - Phase or Position or Programmable Limit Switch"
+		],
+		"text": "MC_DigitalCamSwitch\nThis Function Block is the analogy to switches on a motor shaft: it commands a group of discrete output bits to switch in analogy to a set of mechanical cam controlled switches connected to an axis. Forward and backward movements are allowed.\ninput Enable BOOL Enables the 'Switches' outputs\ninput EnableMask DWORD 32 bits of BOOL. Enables the different tracks. Least significant data is related to the lowest TrackNumber. With data SET (to '1' resp. TRUE) the related TrackNumber is enabled.\ninput ValueSource MC_SOURCE Defines the source for axis values (e.g. positions): mcSetValue - Synchronization on set value mcActualValue - Synchronization on actual value\noutput InOperation BOOL The commanded tracks are enabled\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\ninout Axis AXIS_REF Reference to the axis\ninout Switches MC_CAMSWITCH_REF Reference to the switching actions.\ninout Outputs MC_OUTPUT_REF Reference to the signal outputs, directly related to the referenced tracks. (max. 32 per function block) (First output = first TrackNumber)\ninout TrackOptions MCTRACK_REF Reference to structure containing track related properties, e.g. the ON and OFF compensations per output/track."
+	},
+	{
+		"name": "MC_TouchProbe",
+		"type": "function_block",
+		"description": "This Function Block is used to record an axis position at a trigger event",
+		"inputs": [
+			{
+				"name": "Execute",
+				"type": "BOOL",
+				"description": "Starts touch probe recording at rising edge"
+			},
+			{
+				"name": "WindowOnly",
+				"type": "BOOL",
+				"description": "If SET, only use the window (defined hereunder) to accept trigger events"
+			},
+			{
+				"name": "FirstPosition",
+				"type": "REAL",
+				"description": "Start position from where (positive direction) trigger events are accepted (in technical units [u]). Value included in window."
+			},
+			{
+				"name": "LastPosition",
+				"type": "REAL",
+				"description": "Stop position of the window (in technical units [u]). Value included in window."
+			}
+		],
+		"outputs": [
+			{
+				"name": "Done",
+				"type": "BOOL",
+				"description": "Trigger event recorded"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "CommandAborted",
+				"type": "BOOL",
+				"description": "‘Command’ is aborted by another command (MC_AbortTrigger)"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			},
+			{
+				"name": "RecordedPosition",
+				"type": "REAL",
+				"description": "Position where trigger event occurred (in technical units [u])"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Axis",
+				"type": "AXIS_REF",
+				"description": "Reference to the axis"
+			},
+			{
+				"name": "TriggerInput",
+				"type": "MC_TRIGGER_REF",
+				"description": "Reference to the trigger signal source. Trigger input may be specified by the AXIS_REF."
+			}
+		],
+		"notes": [
+			"Intended for single shot operation, that is the first event after the rising edge at ‘Execute’ is valid for recording only. Possible following events are ignored",
+			"One Function Block instance should represent exactly one probing command",
+			"In case of multiple instances on the same probe and axis, the elements of MC_TRIGGER_REF should be extended with TouchProbeID - Identification of a unique probing command – this can be linked to MC_AbortTrigger"
+		],
+		"text": "MC_TouchProbe\nThis Function Block is used to record an axis position at a trigger event\ninput Execute BOOL Starts touch probe recording at rising edge\ninput WindowOnly BOOL If SET, only use the window (defined hereunder) to accept trigger events\ninput FirstPosition REAL Start position from where (positive direction) trigger events are accepted (in technical units [u]). Value included in window.\ninput LastPosition REAL Stop position of the window (in technical units [u]). Value included in window.\noutput Done BOOL Trigger event recorded\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput CommandAborted BOOL ‘Command’ is aborted by another command (MC_AbortTrigger)\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\noutput RecordedPosition REAL Position where trigger event occurred (in technical units [u])\ninout Axis AXIS_REF Reference to the axis\ninout TriggerInput MC_TRIGGER_REF Reference to the trigger signal source. Trigger input may be specified by the AXIS_REF."
+	},
+	{
+		"name": "MC_AbortTrigger",
+		"type": "function_block",
+		"description": "This Function Block is used to abort function blocks which are connected to trigger events (e.g. MC_TouchProbe)",
+		"inputs": [
+			{
+				"name": "Execute",
+				"type": "BOOL",
+				"description": "Aborts trigger event at rising edge"
+			}
+		],
+		"outputs": [
+			{
+				"name": "Done",
+				"type": "BOOL",
+				"description": "Trigger functionality aborted"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Axis",
+				"type": "AXIS_REF",
+				"description": "Reference to the axis"
+			},
+			{
+				"name": "TriggerInput",
+				"type": "MC_TRIGGER_REF",
+				"description": "Reference to the trigger signal source. ‘TriggerInput’ may be specified by the AXIS_REF. See Chapter 3.33 MC_TouchProbe"
+			}
+		],
+		"notes": [
+			"-"
+		],
+		"text": "MC_AbortTrigger\nThis Function Block is used to abort function blocks which are connected to trigger events (e.g. MC_TouchProbe)\ninput Execute BOOL Aborts trigger event at rising edge\noutput Done BOOL Trigger functionality aborted\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\ninout Axis AXIS_REF Reference to the axis\ninout TriggerInput MC_TRIGGER_REF Reference to the trigger signal source. ‘TriggerInput’ may be specified by the AXIS_REF. See Chapter 3.33 MC_TouchProbe"
+	},
+	{
+		"name": "MC_CamTableSelect",
+		"type": "function_block",
+		"description": "This Function Block selects the CAM tables by setting the connections to the relevant tables",
+		"inputs": [
+			{
+				"name": "Execute",
+				"type": "BOOL",
+				"description": "Selection at rising edge"
+			},
+			{
+				"name": "Periodic",
+				"type": "BOOL",
+				"description": "1 = periodic, 0 = non periodic (single-shot)"
+			},
+			{
+				"name": "MasterAbsolute",
+				"type": "BOOL",
+				"description": "1 = absolute; 0 = relative coordinates"
+			},
+			{
+				"name": "SlaveAbsolute",
+				"type": "BOOL",
+				"description": "1 = absolute; 0 = relative coordinates"
+			},
+			{
+				"name": "ExecutionMode",
+				"type": "MC_EXECUTION_MODE",
+				"description": "Defines the chronological sequence of the FB. mcImmediately - the functionality is immediately valid and may influence the on-going motion but not the state (note: is the default behaviour) mcQueued - Same functionality as buffer mode 'Buffered'."
+			}
+		],
+		"outputs": [
+			{
+				"name": "Done",
+				"type": "BOOL",
+				"description": "Pre-selection done"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			},
+			{
+				"name": "CamTableID",
+				"type": "MC_CAM_ID",
+				"description": "Identifier of CAM Table to be used in the MC_CamIn FB"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Master",
+				"type": "AXIS_REF",
+				"description": "Reference to the master axis"
+			},
+			{
+				"name": "Slave",
+				"type": "AXIS_REF",
+				"description": "Reference to the slave axis"
+			},
+			{
+				"name": "CamTable",
+				"type": "MC_CAM_REF",
+				"description": "Reference to CAM description"
+			}
+		],
+		"notes": [
+			"• A virtual axis can be used as master axis • MC_CAM_REF is a supplier specific data type • MC_CAM_ID is a supplier specific data type • MC_CamTableSelect makes data available. This can include:",
+			"Starting point of a download of a profile",
+			"Start to generate a CAM profile • When the Done output is SET, the CamTableID is valid and ready for use in a MC_CamIn FB. • Possible parameters within the structure CAM_TABLE_REF are: ○ E MasterPositions REAL, List of expressions of the MasterValues for the 'CamTable' ○ E SlavePositions REAL, List of expressions of the SlaveValues for the 'CamTable'"
+		],
+		"text": "MC_CamTableSelect\nThis Function Block selects the CAM tables by setting the connections to the relevant tables\ninput Execute BOOL Selection at rising edge\ninput Periodic BOOL 1 = periodic, 0 = non periodic (single-shot)\ninput MasterAbsolute BOOL 1 = absolute; 0 = relative coordinates\ninput SlaveAbsolute BOOL 1 = absolute; 0 = relative coordinates\ninput ExecutionMode MC_EXECUTION_MODE Defines the chronological sequence of the FB. mcImmediately - the functionality is immediately valid and may influence the on-going motion but not the state (note: is the default behaviour) mcQueued - Same functionality as buffer mode 'Buffered'.\noutput Done BOOL Pre-selection done\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\noutput CamTableID MC_CAM_ID Identifier of CAM Table to be used in the MC_CamIn FB\ninout Master AXIS_REF Reference to the master axis\ninout Slave AXIS_REF Reference to the slave axis\ninout CamTable MC_CAM_REF Reference to CAM description"
+	},
+	{
+		"name": "MC_CamIn",
+		"type": "function_block",
+		"description": "This Function Block engages the CAM",
+		"inputs": [
+			{
+				"name": "Execute",
+				"type": "BOOL",
+				"description": "Start at rising edge"
+			},
+			{
+				"name": "ContinuousUpdate",
+				"type": "BOOL",
+				"description": "See 2.4.6 The input 'ContinuousUpdate'"
+			},
+			{
+				"name": "MasterOffset",
+				"type": "REAL",
+				"description": "Offset of the master shaft to cam."
+			},
+			{
+				"name": "SlaveOffset",
+				"type": "REAL",
+				"description": "Offset of slave table."
+			},
+			{
+				"name": "MasterScaling",
+				"type": "REAL",
+				"description": "Factor for the master profile (default = 1.0). From the slave point of view the master overall profile is multiplied by this factor"
+			},
+			{
+				"name": "SlaveScaling",
+				"type": "REAL",
+				"description": "Factor for the slave profile (default = 1.0). The overall slave profile is multiplied by this factor."
+			},
+			{
+				"name": "MasterStartDistance",
+				"type": "REAL",
+				"description": "The master distance for the slave to start to synchronize to the master."
+			},
+			{
+				"name": "MasterSyncPosition",
+				"type": "REAL",
+				"description": "The position of the master in the CAM profile where the slave is in-sync with the master. (if the 'MasterSyncPosition' does not exist, at the first point of the CAM profile the master and slave are synchronized.) Note: the inputs acceleration, decelerations and jerk are not added here"
+			},
+			{
+				"name": "StartMode",
+				"type": "MC_START_MODE",
+				"description": "Start mode: mcAbsolute, mcRelative, or mcRampIn"
+			},
+			{
+				"name": "MasterValueSource",
+				"type": "MC_SOURCE",
+				"description": "Defines the source for synchronization: mcSetValue - Synchronization on master set value mcActualValue - Synchronization on master actual value"
+			},
+			{
+				"name": "CamTableID",
+				"type": "MC_CAM_ID",
+				"description": "Identifier of CAM Table to be used, linked to output of MC_CamTableSelect"
+			},
+			{
+				"name": "BufferMode",
+				"type": "MC_BUFFER_MODE",
+				"description": "Defines the chronological sequence of the FB. See 2.4.2 Aborting versus Buffered modes"
+			}
+		],
+		"outputs": [
+			{
+				"name": "InSync",
+				"type": "BOOL",
+				"description": "Is TRUE if the set value = the commanded value."
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Active",
+				"type": "BOOL",
+				"description": "Indicates that the FB has control on the axis"
+			},
+			{
+				"name": "CommandAborted",
+				"type": "BOOL",
+				"description": "'Command' is aborted by another command"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			},
+			{
+				"name": "EndOfProfile",
+				"type": "BOOL",
+				"description": "Pulsed output signaling the cyclic end of the CAM Profile It is displayed every time the end of the cam profile is reached. In reverse direction, the 'EndOfProfile' is displayed also at the end of the cam profile (in this case the first point of the cam profile)"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Master",
+				"type": "AXIS_REF",
+				"description": "Reference to the master axis"
+			},
+			{
+				"name": "Slave",
+				"type": "AXIS_REF",
+				"description": "Reference to the slave axis"
+			}
+		],
+		"notes": [],
+		"text": "MC_CamIn\nThis Function Block engages the CAM\ninput Execute BOOL Start at rising edge\ninput ContinuousUpdate BOOL See 2.4.6 The input 'ContinuousUpdate'\ninput MasterOffset REAL Offset of the master shaft to cam.\ninput SlaveOffset REAL Offset of slave table.\ninput MasterScaling REAL Factor for the master profile (default = 1.0). From the slave point of view the master overall profile is multiplied by this factor\ninput SlaveScaling REAL Factor for the slave profile (default = 1.0). The overall slave profile is multiplied by this factor.\ninput MasterStartDistance REAL The master distance for the slave to start to synchronize to the master.\ninput MasterSyncPosition REAL The position of the master in the CAM profile where the slave is in-sync with the master. (if the 'MasterSyncPosition' does not exist, at the first point of the CAM profile the master and slave are synchronized.) Note: the inputs acceleration, decelerations and jerk are not added here\ninput StartMode MC_START_MODE Start mode: mcAbsolute, mcRelative, or mcRampIn\ninput MasterValueSource MC_SOURCE Defines the source for synchronization: mcSetValue - Synchronization on master set value mcActualValue - Synchronization on master actual value\ninput CamTableID MC_CAM_ID Identifier of CAM Table to be used, linked to output of MC_CamTableSelect\ninput BufferMode MC_BUFFER_MODE Defines the chronological sequence of the FB. See 2.4.2 Aborting versus Buffered modes\noutput InSync BOOL Is TRUE if the set value = the commanded value.\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Active BOOL Indicates that the FB has control on the axis\noutput CommandAborted BOOL 'Command' is aborted by another command\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\noutput EndOfProfile BOOL Pulsed output signaling the cyclic end of the CAM Profile It is displayed every time the end of the cam profile is reached. In reverse direction, the 'EndOfProfile' is displayed also at the end of the cam profile (in this case the first point of the cam profile)\ninout Master AXIS_REF Reference to the master axis\ninout Slave AXIS_REF Reference to the slave axis"
+	},
+	{
+		"name": "MC_CamOut",
+		"type": "function_block",
+		"description": "This Function Block disengages the Slave axis from the Master axis immediately",
+		"inputs": [
+			{
+				"name": "Execute",
+				"type": "BOOL",
+				"description": "Start to disengage the slave from the master"
+			}
+		],
+		"outputs": [
+			{
+				"name": "Done",
+				"type": "BOOL",
+				"description": "Disengaging completed"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Slave",
+				"type": "AXIS_REF",
+				"description": "Reference to the slave axis"
+			}
+		],
+		"notes": [
+			"• It is assumed that this command is followed by another command, for instance MC_Stop, MC_GearIn, or any other command. If there is no new command, the default condition should be: maintain last velocity. • After issuing the FB there is no FB active on the slave axis till the next FB is issued (what can result in problems because no motion command is controlling the axis). Alternatively one can read the actual velocity via MC_ReadActualVelocity and issue MC_MoveVelocity on the slave axis with the actual velocity as input. The FB is here because of compatibility reasons"
+		],
+		"text": "MC_CamOut\nThis Function Block disengages the Slave axis from the Master axis immediately\ninput Execute BOOL Start to disengage the slave from the master\noutput Done BOOL Disengaging completed\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\ninout Slave AXIS_REF Reference to the slave axis"
+	},
+	{
+		"name": "MC_GearIn",
+		"type": "function_block",
+		"description": "This Function Block commands a ratio between the VELOCITY of the slave and master axis.",
+		"inputs": [
+			{
+				"name": "Execute",
+				"type": "BOOL",
+				"description": "Start the gearing process at the rising edge"
+			},
+			{
+				"name": "ContinuousUpdate",
+				"type": "BOOL",
+				"description": "See 2.4.6 The input 'ContinuousUpdate"
+			},
+			{
+				"name": "RatioNumerator",
+				"type": "INT",
+				"description": "Gear ratio Numerator"
+			},
+			{
+				"name": "RatioDenominator",
+				"type": "UINT",
+				"description": "Gear ratio Denominator"
+			},
+			{
+				"name": "MasterValueSource",
+				"type": "MC_SOURCE",
+				"description": "Defines the source for synchronization:mcSetValue - Synchronization on master set valuemcActualValue - Synchronization on master actual value"
+			},
+			{
+				"name": "Acceleration",
+				"type": "REAL",
+				"description": "Acceleration for gearing in"
+			},
+			{
+				"name": "Deceleration",
+				"type": "REAL",
+				"description": "Deceleration for gearing in"
+			},
+			{
+				"name": "Jerk",
+				"type": "REAL",
+				"description": "Jerk of Gearing"
+			},
+			{
+				"name": "BufferMode",
+				"type": "MC_BUFFER_MODE",
+				"description": "Defines the chronological sequence of the FB. See 2.4.2Aborting versus Buffered modes"
+			}
+		],
+		"outputs": [
+			{
+				"name": "InGear",
+				"type": "BOOL",
+				"description": "Is TRUE if the set value = the commanded value."
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Active",
+				"type": "BOOL",
+				"description": "Indicates that the FB has control on the axis"
+			},
+			{
+				"name": "CommandAborted",
+				"type": "BOOL",
+				"description": "'Command' is aborted by another command"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the FunctionBlock"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Master",
+				"type": "AXIS_REF",
+				"description": "Reference to the master axis"
+			},
+			{
+				"name": "Slave",
+				"type": "AXIS_REF",
+				"description": "Reference to the slave axis"
+			}
+		],
+		"notes": [
+			"The slave ramps up to the ratio of the master velocity and locks in when this is reached. Any lost distance during synchronization is not caught up.",
+			"The gearing ratio can be changed while MC_GearIn is running, using a consecutive MC_GearIn command without the necessity to MC_GearOut first",
+			"After being 'InGear', a position locking or just a velocity locking is system specific."
+		],
+		"text": "MC_GearIn\nThis Function Block commands a ratio between the VELOCITY of the slave and master axis.\ninput Execute BOOL Start the gearing process at the rising edge\ninput ContinuousUpdate BOOL See 2.4.6 The input 'ContinuousUpdate\ninput RatioNumerator INT Gear ratio Numerator\ninput RatioDenominator UINT Gear ratio Denominator\ninput MasterValueSource MC_SOURCE Defines the source for synchronization:mcSetValue - Synchronization on master set valuemcActualValue - Synchronization on master actual value\ninput Acceleration REAL Acceleration for gearing in\ninput Deceleration REAL Deceleration for gearing in\ninput Jerk REAL Jerk of Gearing\ninput BufferMode MC_BUFFER_MODE Defines the chronological sequence of the FB. See 2.4.2Aborting versus Buffered modes\noutput InGear BOOL Is TRUE if the set value = the commanded value.\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Active BOOL Indicates that the FB has control on the axis\noutput CommandAborted BOOL 'Command' is aborted by another command\noutput Error BOOL Signals that an error has occurred within the FunctionBlock\noutput ErrorID WORD Error identification\ninout Master AXIS_REF Reference to the master axis\ninout Slave AXIS_REF Reference to the slave axis"
+	},
+	{
+		"name": "MC_GearOut",
+		"type": "function_block",
+		"description": "This Function Block disengages the Slave axis from the Master axis",
+		"inputs": [
+			{
+				"name": "Execute",
+				"type": "BOOL",
+				"description": "Start disengaging process at the rising edge"
+			}
+		],
+		"outputs": [
+			{
+				"name": "Done",
+				"type": "BOOL",
+				"description": "Disengaging completed"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Slave",
+				"type": "AXIS_REF",
+				"description": "Reference to the slave axis"
+			}
+		],
+		"notes": [
+			"• It is assumed that this command is followed by another command, for instance MC_Stop, MC_GearIn, or any other command. If there is no new command, the default condition should be: maintain last velocity. • After issuing the FB there is no FB active on the slave axis till the next FB is issued (what can result in problems because no motion command is controlling the axis). Alternatively one can read the actual velocity via MC_ReadActualVelocity and issue MC_MoveVelocity on the slave axis with the actual velocity as input. The FB is here because of compatibility reasons"
+		],
+		"text": "MC_GearOut\nThis Function Block disengages the Slave axis from the Master axis\ninput Execute BOOL Start disengaging process at the rising edge\noutput Done BOOL Disengaging completed\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\ninout Slave AXIS_REF Reference to the slave axis"
+	},
+	{
+		"name": "MC_GearInPos",
+		"type": "function_block",
+		"description": "This Function Block commands a gear ratio between the position of the slave and master axes from the synchronization point onwards.",
+		"inputs": [
+			{
+				"name": "Execute",
+				"type": "BOOL",
+				"description": "Start the gearing process at the rising edge"
+			},
+			{
+				"name": "RatioNumerator",
+				"type": "INT",
+				"description": "Gear ratio Numerator"
+			},
+			{
+				"name": "RatioDenominator",
+				"type": "UINT",
+				"description": "Gear ratio Denominator"
+			},
+			{
+				"name": "MasterValueSource",
+				"type": "MC_SOURCE",
+				"description": "Defines the source for synchronization: mcSetValue - Synchronization on master set value mcActualValue - Synchronization on master actual value"
+			},
+			{
+				"name": "MasterSyncPosition",
+				"type": "REAL",
+				"description": "The position of the master in the CAM profile where the slave is in-sync with the master. (if the 'MasterSyncPosition' does not exist, at the first point of the CAM profile the master and slave are synchronized.) Note: the inputs acceleration, decelerations and jerk are not added here"
+			},
+			{
+				"name": "SlaveSyncPosition",
+				"type": "REAL",
+				"description": "Slave Position at which the axes are running in sync"
+			},
+			{
+				"name": "SyncMode",
+				"type": "MC_SYNC_MODE",
+				"description": "Defines the way to synchronize (like 'mcShortest'; 'mcCatchUp'; 'mcSlowDown'). Vendor specific"
+			},
+			{
+				"name": "MasterStartDistance",
+				"type": "REAL",
+				"description": "Master Distance for gear in procedure (when the Slave axis is started to get into synchronization)"
+			},
+			{
+				"name": "Velocity",
+				"type": "REAL",
+				"description": "Maximum Velocity during the time difference 'StartSync' and 'InSync'"
+			},
+			{
+				"name": "Acceleration",
+				"type": "REAL",
+				"description": "Maximum Acceleration during the time difference 'Start-Sync' and 'InSync'"
+			},
+			{
+				"name": "Deceleration",
+				"type": "REAL",
+				"description": "Maximum Deceleration during the time difference 'Start-Sync' and 'InSync'"
+			},
+			{
+				"name": "Jerk",
+				"type": "REAL",
+				"description": "Maximum Jerk during the time difference 'StartSync' and 'InSync'"
+			},
+			{
+				"name": "BufferMode",
+				"type": "MC_BUFFER_MODE",
+				"description": "Defines the chronological sequence of the FB. See 2.4.2 Aborting versus Buffered modes"
+			}
+		],
+		"outputs": [
+			{
+				"name": "StartSync",
+				"type": "BOOL",
+				"description": "Commanded gearing starts"
+			},
+			{
+				"name": "InSync",
+				"type": "BOOL",
+				"description": "Is TRUE if the set value = the commanded value (is calculated set of values derived of master position and gear ratio.)"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Active",
+				"type": "BOOL",
+				"description": "Indicates that the FB has control on the axis"
+			},
+			{
+				"name": "CommandAborted",
+				"type": "BOOL",
+				"description": "'Command' is aborted by another command"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Master",
+				"type": "AXIS_REF",
+				"description": "Reference to the master axis"
+			},
+			{
+				"name": "Slave",
+				"type": "AXIS_REF",
+				"description": "Reference to the slave axis"
+			}
+		],
+		"notes": [],
+		"text": "MC_GearInPos\nThis Function Block commands a gear ratio between the position of the slave and master axes from the synchronization point onwards.\ninput Execute BOOL Start the gearing process at the rising edge\ninput RatioNumerator INT Gear ratio Numerator\ninput RatioDenominator UINT Gear ratio Denominator\ninput MasterValueSource MC_SOURCE Defines the source for synchronization: mcSetValue - Synchronization on master set value mcActualValue - Synchronization on master actual value\ninput MasterSyncPosition REAL The position of the master in the CAM profile where the slave is in-sync with the master. (if the 'MasterSyncPosition' does not exist, at the first point of the CAM profile the master and slave are synchronized.) Note: the inputs acceleration, decelerations and jerk are not added here\ninput SlaveSyncPosition REAL Slave Position at which the axes are running in sync\ninput SyncMode MC_SYNC_MODE Defines the way to synchronize (like 'mcShortest'; 'mcCatchUp'; 'mcSlowDown'). Vendor specific\ninput MasterStartDistance REAL Master Distance for gear in procedure (when the Slave axis is started to get into synchronization)\ninput Velocity REAL Maximum Velocity during the time difference 'StartSync' and 'InSync'\ninput Acceleration REAL Maximum Acceleration during the time difference 'Start-Sync' and 'InSync'\ninput Deceleration REAL Maximum Deceleration during the time difference 'Start-Sync' and 'InSync'\ninput Jerk REAL Maximum Jerk during the time difference 'StartSync' and 'InSync'\ninput BufferMode MC_BUFFER_MODE Defines the chronological sequence of the FB. See 2.4.2 Aborting versus Buffered modes\noutput StartSync BOOL Commanded gearing starts\noutput InSync BOOL Is TRUE if the set value = the commanded value (is calculated set of values derived of master position and gear ratio.)\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Active BOOL Indicates that the FB has control on the axis\noutput CommandAborted BOOL 'Command' is aborted by another command\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\ninout Master AXIS_REF Reference to the master axis\ninout Slave AXIS_REF Reference to the slave axis"
+	},
+	{
+		"name": "MC_PhasingAbsolute",
+		"type": "function_block",
+		"description": "This Function Block creates an absolute phase shift in the master position of a slave axis. The master position is shifted in relation to the real physical position. This is analogous to opening a coupling on the master shaft for a moment, and is used to delay or advance an axis to its master. The phase shift is seen from the slave. The master does not know that there is a phase shift experienced by the slave (MasterPos as seen from the SlaveAxis = Physi-calMasterPos + PhaseShiftValueSlaveAxis, the phase shift value has the character of a position offset) The phase shift remains until another ‘Phasing’ command changes it again.",
+		"inputs": [
+			{
+				"name": "Execute",
+				"type": "BOOL",
+				"description": "Start the phasing process at the rising edge"
+			},
+			{
+				"name": "PhaseShift",
+				"type": "REAL",
+				"description": "Absolut phase difference in master position of the slave axis [u]"
+			},
+			{
+				"name": "Velocity",
+				"type": "REAL",
+				"description": "Maximum Velocity to reach phase difference [u/s]"
+			},
+			{
+				"name": "Acceleration",
+				"type": "REAL",
+				"description": "Maximum Acceleration to reach phase difference [u/s2]"
+			},
+			{
+				"name": "Deceleration",
+				"type": "REAL",
+				"description": "Maximum Deceleration to reach phase difference [u/s2]"
+			},
+			{
+				"name": "Jerk",
+				"type": "REAL",
+				"description": "Maximum Jerk to reach phase difference [u/s3]"
+			},
+			{
+				"name": "BufferMode",
+				"type": "MC_BUFFER_MODE",
+				"description": "Defines the chronological sequence of the FB. See 2.4.2 Aborting versus Buffered modes"
+			}
+		],
+		"outputs": [
+			{
+				"name": "Done",
+				"type": "BOOL",
+				"description": "Commanded phasing reached"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Active",
+				"type": "BOOL",
+				"description": "Indicates that the FB has control on the axis"
+			},
+			{
+				"name": "CommandAborted",
+				"type": "BOOL",
+				"description": "‘Command’ is aborted by another command"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			},
+			{
+				"name": "AbsolutePhaseShift",
+				"type": "REAL",
+				"description": "Displays continuously the absolute phase shift [u] while Busy is set."
+			}
+		],
+		"inouts": [
+			{
+				"name": "Master",
+				"type": "AXIS_REF",
+				"description": "Reference to the master axis"
+			},
+			{
+				"name": "Slave",
+				"type": "AXIS_REF",
+				"description": "Reference to the slave axis"
+			}
+		],
+		"notes": [
+			"‘Phase’, ‘Velocity’, ‘Acceleration’, ‘Deceleration’ and ‘Jerk’ of a phase shift are controlled by the FB.For comparison: MC_MoveSuperimposed could also be used to act on the slave axis. MC_Phasing acts on the master side, as seen from the slave"
+		],
+		"text": "MC_PhasingAbsolute\nThis Function Block creates an absolute phase shift in the master position of a slave axis. The master position is shifted in relation to the real physical position. This is analogous to opening a coupling on the master shaft for a moment, and is used to delay or advance an axis to its master. The phase shift is seen from the slave. The master does not know that there is a phase shift experienced by the slave (MasterPos as seen from the SlaveAxis = Physi-calMasterPos + PhaseShiftValueSlaveAxis, the phase shift value has the character of a position offset) The phase shift remains until another ‘Phasing’ command changes it again.\ninput Execute BOOL Start the phasing process at the rising edge\ninput PhaseShift REAL Absolut phase difference in master position of the slave axis [u]\ninput Velocity REAL Maximum Velocity to reach phase difference [u/s]\ninput Acceleration REAL Maximum Acceleration to reach phase difference [u/s2]\ninput Deceleration REAL Maximum Deceleration to reach phase difference [u/s2]\ninput Jerk REAL Maximum Jerk to reach phase difference [u/s3]\ninput BufferMode MC_BUFFER_MODE Defines the chronological sequence of the FB. See 2.4.2 Aborting versus Buffered modes\noutput Done BOOL Commanded phasing reached\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Active BOOL Indicates that the FB has control on the axis\noutput CommandAborted BOOL ‘Command’ is aborted by another command\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\noutput AbsolutePhaseShift REAL Displays continuously the absolute phase shift [u] while Busy is set.\ninout Master AXIS_REF Reference to the master axis\ninout Slave AXIS_REF Reference to the slave axis"
+	},
+	{
+		"name": "MC_PhasingRelative",
+		"type": "function_block",
+		"description": "This Function Block creates a phase shift in the master position of a slave axis relative to the existing phase shift. The master position is shifted in relation to the real physical position. This is analogous to opening a coupling on the master shaft for a moment, and is used to delay or advance an axis to its master. The phase shift is seen from the slave. The master does not know that there is a phase shift experienced by the slave. (MasterPos as seen from SlaveAxis = PhysicalMasterPos + PhaseShiftValueSlaveAxis, the phase shift value has the character of a position offset) The phase shift remains until another ‘Phasing’ command changes it again. Relative phase shifts are added to each other for the applicable phase shift",
+		"inputs": [
+			{
+				"name": "Execute",
+				"type": "BOOL",
+				"description": "Start the phasing process at the rising edge"
+			},
+			{
+				"name": "PhaseShift",
+				"type": "REAL",
+				"description": "Additional phase difference in master position of the slave axis [u]"
+			},
+			{
+				"name": "Velocity",
+				"type": "REAL",
+				"description": "Maximum Velocity to reach phase difference [u/s]"
+			},
+			{
+				"name": "Acceleration",
+				"type": "REAL",
+				"description": "Maximum Acceleration to reach phase difference [u/s2]"
+			},
+			{
+				"name": "Deceleration",
+				"type": "REAL",
+				"description": "Maximum Deceleration to reach phase difference [u/s2]"
+			},
+			{
+				"name": "Jerk",
+				"type": "REAL",
+				"description": "Maximum Jerk to reach phase difference [u/s3]"
+			},
+			{
+				"name": "BufferMode",
+				"type": "MC_BUFFER_MODE",
+				"description": "Defines the chronological sequence of the FB. See 2.4.2 Aborting versus Buffered modes"
+			}
+		],
+		"outputs": [
+			{
+				"name": "Done",
+				"type": "BOOL",
+				"description": "Commanded phasing reached"
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Active",
+				"type": "BOOL",
+				"description": "Indicates that the FB has control on the axis"
+			},
+			{
+				"name": "CommandAborted",
+				"type": "BOOL",
+				"description": "‘Command’ is aborted by another command"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			},
+			{
+				"name": "CoveredPhaseShift",
+				"type": "REAL",
+				"description": "Displays continuously the covered phase shift since it was started"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Master",
+				"type": "AXIS_REF",
+				"description": "Reference to the master axis"
+			},
+			{
+				"name": "Slave",
+				"type": "AXIS_REF",
+				"description": "Reference to the slave axis"
+			}
+		],
+		"notes": [
+			"•‘Phase’, ‘Velocity’, ‘Acceleration’, ‘Deceleration’ and ‘Jerk’ of a phase shift are controlled by the FB. •For comparison: MC_MoveSuperimposed could also be used to act on the slave axis. MC_Phasing acts on the master side, as seen from the slave"
+		],
+		"text": "MC_PhasingRelative\nThis Function Block creates a phase shift in the master position of a slave axis relative to the existing phase shift. The master position is shifted in relation to the real physical position. This is analogous to opening a coupling on the master shaft for a moment, and is used to delay or advance an axis to its master. The phase shift is seen from the slave. The master does not know that there is a phase shift experienced by the slave. (MasterPos as seen from SlaveAxis = PhysicalMasterPos + PhaseShiftValueSlaveAxis, the phase shift value has the character of a position offset) The phase shift remains until another ‘Phasing’ command changes it again. Relative phase shifts are added to each other for the applicable phase shift\ninput Execute BOOL Start the phasing process at the rising edge\ninput PhaseShift REAL Additional phase difference in master position of the slave axis [u]\ninput Velocity REAL Maximum Velocity to reach phase difference [u/s]\ninput Acceleration REAL Maximum Acceleration to reach phase difference [u/s2]\ninput Deceleration REAL Maximum Deceleration to reach phase difference [u/s2]\ninput Jerk REAL Maximum Jerk to reach phase difference [u/s3]\ninput BufferMode MC_BUFFER_MODE Defines the chronological sequence of the FB. See 2.4.2 Aborting versus Buffered modes\noutput Done BOOL Commanded phasing reached\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Active BOOL Indicates that the FB has control on the axis\noutput CommandAborted BOOL ‘Command’ is aborted by another command\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\noutput CoveredPhaseShift REAL Displays continuously the covered phase shift since it was started\ninout Master AXIS_REF Reference to the master axis\ninout Slave AXIS_REF Reference to the slave axis"
+	},
+	{
+		"name": "MC_CombineAxes",
+		"type": "function_block",
+		"description": "This Function Block combines the motion of 2 axes into a third axis with selectable combination method. Basically it is a calculation of a new position setpoint based on the 2 position setpoints of the input axes.This FB is reflected in the state diagram like a synchronized motion type. As application example one can work with a separate profile synchronized to an object on a moving belt, or a rotating knife with flexible covered distance to be cut.",
+		"inputs": [
+			{
+				"name": "Execute",
+				"type": "BOOL",
+				"description": "Start the combination process at the rising edge"
+			},
+			{
+				"name": "ContinuousUpdate",
+				"type": "BOOL",
+				"description": "See 2.4.6 The input 'ContinuousUpdate'"
+			},
+			{
+				"name": "CombineMode",
+				"type": "MC_COM-BINE_MODE",
+				"description": "Defines the type of combination applied to AxisOut :mcAddAxes : Addition of the 2 input axes positionsmcSubAxes : Subtraction of the 2 input axes positions"
+			},
+			{
+				"name": "GearRatioNumeratorM1",
+				"type": "INT",
+				"description": "Numerator for the gear factor for master axis 1 towards the slave"
+			},
+			{
+				"name": "GearRatioDenominatorM1",
+				"type": "INT",
+				"description": "Corresponding denominator for master axis 1"
+			},
+			{
+				"name": "GearRatioNumeratorM2",
+				"type": "INT",
+				"description": "Numerator for the gear factor for master axis 2 towards the slave"
+			},
+			{
+				"name": "GearRatioDenominatorM2",
+				"type": "INT",
+				"description": "Corresponding denominator for master axis 2"
+			},
+			{
+				"name": "MasterValueSourceM1",
+				"type": "MC_SOURCE",
+				"description": "Defines the source for synchronization for master axis 1:mcSetValue - Synchronization on master set valuemcActualValue - Synchronization on master actual value"
+			},
+			{
+				"name": "MasterValueSourceM2",
+				"type": "MC_SOURCE",
+				"description": "Defines the source for synchronization for master axis 2:mcSetValue - Synchronization on master set valuemcActualValue - Synchronization on master actual value"
+			},
+			{
+				"name": "BufferMode",
+				"type": "MC_BUFFER_MODE",
+				"description": "Defines the behavior of the axis: modes are 'Aborting', 'Buffered', 'Blending'"
+			}
+		],
+		"outputs": [
+			{
+				"name": "InSync",
+				"type": "BOOL",
+				"description": "Is TRUE if the set value = the commanded value."
+			},
+			{
+				"name": "Busy",
+				"type": "BOOL",
+				"description": "The FB is not finished and new output values are to be expected"
+			},
+			{
+				"name": "Active",
+				"type": "BOOL",
+				"description": "Indicates that the FB has control on the combined axis"
+			},
+			{
+				"name": "CommandAborted",
+				"type": "BOOL",
+				"description": "'Command' is aborted by another command"
+			},
+			{
+				"name": "Error",
+				"type": "BOOL",
+				"description": "Signals that an error has occurred within the Function Block"
+			},
+			{
+				"name": "ErrorID",
+				"type": "WORD",
+				"description": "Error identification"
+			}
+		],
+		"inouts": [
+			{
+				"name": "Master1",
+				"type": "AXIS_REF",
+				"description": "Reference to the first master axis"
+			},
+			{
+				"name": "Master2",
+				"type": "AXIS_REF",
+				"description": "Reference to the second master axis"
+			},
+			{
+				"name": "Slave",
+				"type": "AXIS_REF",
+				"description": "Reference to the resulting combined axis. Can be a virtual axis or linked directly to a real axis"
+			}
+		],
+		"notes": [
+			"To stop the motion, the FB has to be interrupted by another FB issuing a new command"
+		],
+		"text": "MC_CombineAxes\nThis Function Block combines the motion of 2 axes into a third axis with selectable combination method. Basically it is a calculation of a new position setpoint based on the 2 position setpoints of the input axes.This FB is reflected in the state diagram like a synchronized motion type. As application example one can work with a separate profile synchronized to an object on a moving belt, or a rotating knife with flexible covered distance to be cut.\ninput Execute BOOL Start the combination process at the rising edge\ninput ContinuousUpdate BOOL See 2.4.6 The input 'ContinuousUpdate'\ninput CombineMode MC_COM-BINE_MODE Defines the type of combination applied to AxisOut :mcAddAxes : Addition of the 2 input axes positionsmcSubAxes : Subtraction of the 2 input axes positions\ninput GearRatioNumeratorM1 INT Numerator for the gear factor for master axis 1 towards the slave\ninput GearRatioDenominatorM1 INT Corresponding denominator for master axis 1\ninput GearRatioNumeratorM2 INT Numerator for the gear factor for master axis 2 towards the slave\ninput GearRatioDenominatorM2 INT Corresponding denominator for master axis 2\ninput MasterValueSourceM1 MC_SOURCE Defines the source for synchronization for master axis 1:mcSetValue - Synchronization on master set valuemcActualValue - Synchronization on master actual value\ninput MasterValueSourceM2 MC_SOURCE Defines the source for synchronization for master axis 2:mcSetValue - Synchronization on master set valuemcActualValue - Synchronization on master actual value\ninput BufferMode MC_BUFFER_MODE Defines the behavior of the axis: modes are 'Aborting', 'Buffered', 'Blending'\noutput InSync BOOL Is TRUE if the set value = the commanded value.\noutput Busy BOOL The FB is not finished and new output values are to be expected\noutput Active BOOL Indicates that the FB has control on the combined axis\noutput CommandAborted BOOL 'Command' is aborted by another command\noutput Error BOOL Signals that an error has occurred within the Function Block\noutput ErrorID WORD Error identification\ninout Master1 AXIS_REF Reference to the first master axis\ninout Master2 AXIS_REF Reference to the second master axis\ninout Slave AXIS_REF Reference to the resulting combined axis. Can be a virtual axis or linked directly to a real axis"
+	}
+]

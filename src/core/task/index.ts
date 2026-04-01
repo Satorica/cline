@@ -1764,7 +1764,6 @@ export class Task {
 			"- If the user request is ambiguous, resolve it toward PLC/ST implementation instead of asking generic tech-stack questions.",
 			"- Never output empty ST output pin bindings such as `Status => ,`.",
 			"- Unless explicitly requested, do not generate CONFIGURATION/RESOURCE/TASK mapping blocks because IDE tooling injects those sections.",
-			"- For demo requests like motor power-on/speed control or dual-motor sync, return ST program body directly.",
 		].join("\n")
 	}
 
