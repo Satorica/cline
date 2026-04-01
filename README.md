@@ -149,3 +149,20 @@ Get the same Cline experience with enterprise-grade controls: SSO (SAML/OIDC), g
 ## License
 
 [Apache 2.0 © 2026 Cline Bot Inc.](./LICENSE)
+
+
+## Release 
+### 1. 安装依赖（如果还没装）
+npm install
+
+### 2. 生成 proto 文件
+npm run protos
+
+### 3. 构建 webview UI + 主扩展
+npm run package
+
+### 4. 打包为 .vsix
+每次做的时候记得npm install一下不然容易node 版本冲突
+```
+npx vsce package --no-dependencies --allow-package-secrets sendgrid
+```

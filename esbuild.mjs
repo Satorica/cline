@@ -125,6 +125,10 @@ const copyWasmFiles = {
 const buildEnvVars = {
 	"import.meta.url": "_importMetaUrl",
 	"process.env.IS_STANDALONE": JSON.stringify("false"),
+	// PLC-only mode: hardcoded at compile time for this dedicated PLC extension.
+	// esbuild replaces process.env.CLINE_FORCE_PLC_ONLY with the string literal
+	// "true" so the runtime env-var check is eliminated entirely.
+	"process.env.CLINE_FORCE_PLC_ONLY": JSON.stringify("true"),
 }
 
 if (production) {

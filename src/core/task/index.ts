@@ -1746,10 +1746,10 @@ export class Task {
 	}
 
 	private getDevPlcHardPromptPrefix(): string | undefined {
-		const forcePlcOnly =
-			this.isTruthyEnvFlag(process.env.CLINE_FORCE_PLC_ONLY) ||
-			(process.env.IS_DEV === "true" && this.isTruthyEnvFlag(process.env.CLINE_DEV_FORCE_PLC_ONLY))
-		if (!forcePlcOnly) {
+		// process.env.CLINE_FORCE_PLC_ONLY is injected as "true" at compile time
+		// by esbuild (see esbuild.mjs buildEnvVars), so this check is always true
+		// in the packaged extension and the branch below is dead-code-eliminated.
+		if (!this.isTruthyEnvFlag(process.env.CLINE_FORCE_PLC_ONLY)) {
 			return undefined
 		}
 
@@ -1768,10 +1768,8 @@ export class Task {
 	}
 
 	private async getForcedPlcSpecPromptInjection(): Promise<string | undefined> {
-		const forcePlcOnly =
-			this.isTruthyEnvFlag(process.env.CLINE_FORCE_PLC_ONLY) ||
-			(process.env.IS_DEV === "true" && this.isTruthyEnvFlag(process.env.CLINE_DEV_FORCE_PLC_ONLY))
-		if (!forcePlcOnly) {
+		// process.env.CLINE_FORCE_PLC_ONLY is injected as "true" at compile time (see esbuild.mjs).
+		if (!this.isTruthyEnvFlag(process.env.CLINE_FORCE_PLC_ONLY)) {
 			return undefined
 		}
 
