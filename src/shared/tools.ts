@@ -33,6 +33,18 @@ export enum ClineDefaultTool {
 	GENERATE_EXPLANATION = "generate_explanation",
 	USE_SKILL = "use_skill",
 	USE_SUBAGENTS = "use_subagents",
+	// NeoIDE API tools
+	NEOIDE_GET_STATUS = "neoide_get_project_status",
+	NEOIDE_GET_CONFIG = "neoide_get_plc_config",
+	NEOIDE_CREATE_AXIS = "neoide_create_axis",
+	NEOIDE_UPDATE_AXIS = "neoide_update_axis",
+	NEOIDE_DELETE_AXIS = "neoide_delete_axis",
+	NEOIDE_CREATE_TASK = "neoide_create_task",
+	NEOIDE_UPDATE_TASK = "neoide_update_task",
+	NEOIDE_DELETE_TASK = "neoide_delete_task",
+	NEOIDE_SET_GLOBAL_VAR = "neoide_set_global_var",
+	NEOIDE_DELETE_GLOBAL_VAR = "neoide_delete_global_var",
+	NEOIDE_COMPILE = "neoide_trigger_compile",
 }
 
 // Array of all tool names for compatibility
@@ -64,4 +76,6 @@ export const READ_ONLY_TOOLS = [
 	ClineDefaultTool.WEB_FETCH,
 	ClineDefaultTool.USE_SKILL,
 	ClineDefaultTool.USE_SUBAGENTS,
+	ClineDefaultTool.NEOIDE_GET_STATUS,
+	ClineDefaultTool.NEOIDE_GET_CONFIG,
 ] as const

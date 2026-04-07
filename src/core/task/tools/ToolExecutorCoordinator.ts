@@ -14,6 +14,19 @@ import { GenerateExplanationToolHandler } from "./handlers/GenerateExplanationTo
 import { ListCodeDefinitionNamesToolHandler } from "./handlers/ListCodeDefinitionNamesToolHandler"
 import { ListFilesToolHandler } from "./handlers/ListFilesToolHandler"
 import { LoadMcpDocumentationHandler } from "./handlers/LoadMcpDocumentationHandler"
+import {
+	NeoIDECompileHandler,
+	NeoIDECreateAxisHandler,
+	NeoIDECreateTaskHandler,
+	NeoIDEDeleteAxisHandler,
+	NeoIDEDeleteGlobalVarHandler,
+	NeoIDEDeleteTaskHandler,
+	NeoIDEGetConfigHandler,
+	NeoIDEGetStatusHandler,
+	NeoIDESetGlobalVarHandler,
+	NeoIDEUpdateAxisHandler,
+	NeoIDEUpdateTaskHandler,
+} from "./handlers/NeoIDEToolHandler"
 import { NewTaskHandler } from "./handlers/NewTaskHandler"
 import { PlanModeRespondHandler } from "./handlers/PlanModeRespondHandler"
 import { ReadFileToolHandler } from "./handlers/ReadFileToolHandler"
@@ -106,6 +119,18 @@ export class ToolExecutorCoordinator {
 		[ClineDefaultTool.GENERATE_EXPLANATION]: (_v: ToolValidator) => new GenerateExplanationToolHandler(),
 		[ClineDefaultTool.USE_SKILL]: (_v: ToolValidator) => new UseSkillToolHandler(),
 		[ClineDefaultTool.USE_SUBAGENTS]: (_v: ToolValidator) => new UseSubagentsToolHandler(),
+		// NeoIDE API tools
+		[ClineDefaultTool.NEOIDE_GET_STATUS]: (_v: ToolValidator) => new NeoIDEGetStatusHandler(),
+		[ClineDefaultTool.NEOIDE_GET_CONFIG]: (_v: ToolValidator) => new NeoIDEGetConfigHandler(),
+		[ClineDefaultTool.NEOIDE_CREATE_AXIS]: (_v: ToolValidator) => new NeoIDECreateAxisHandler(),
+		[ClineDefaultTool.NEOIDE_UPDATE_AXIS]: (_v: ToolValidator) => new NeoIDEUpdateAxisHandler(),
+		[ClineDefaultTool.NEOIDE_DELETE_AXIS]: (_v: ToolValidator) => new NeoIDEDeleteAxisHandler(),
+		[ClineDefaultTool.NEOIDE_CREATE_TASK]: (_v: ToolValidator) => new NeoIDECreateTaskHandler(),
+		[ClineDefaultTool.NEOIDE_UPDATE_TASK]: (_v: ToolValidator) => new NeoIDEUpdateTaskHandler(),
+		[ClineDefaultTool.NEOIDE_DELETE_TASK]: (_v: ToolValidator) => new NeoIDEDeleteTaskHandler(),
+		[ClineDefaultTool.NEOIDE_SET_GLOBAL_VAR]: (_v: ToolValidator) => new NeoIDESetGlobalVarHandler(),
+		[ClineDefaultTool.NEOIDE_DELETE_GLOBAL_VAR]: (_v: ToolValidator) => new NeoIDEDeleteGlobalVarHandler(),
+		[ClineDefaultTool.NEOIDE_COMPILE]: (_v: ToolValidator) => new NeoIDECompileHandler(),
 	}
 
 	/**

@@ -52,6 +52,15 @@ export class AutoApprove {
 				case ClineDefaultTool.APPLY_PATCH:
 				case ClineDefaultTool.BASH:
 				case ClineDefaultTool.USE_SUBAGENTS:
+				case ClineDefaultTool.NEOIDE_CREATE_AXIS:
+				case ClineDefaultTool.NEOIDE_UPDATE_AXIS:
+				case ClineDefaultTool.NEOIDE_DELETE_AXIS:
+				case ClineDefaultTool.NEOIDE_CREATE_TASK:
+				case ClineDefaultTool.NEOIDE_UPDATE_TASK:
+				case ClineDefaultTool.NEOIDE_DELETE_TASK:
+				case ClineDefaultTool.NEOIDE_SET_GLOBAL_VAR:
+				case ClineDefaultTool.NEOIDE_DELETE_GLOBAL_VAR:
+				case ClineDefaultTool.NEOIDE_COMPILE:
 					return [true, true]
 
 				case ClineDefaultTool.BROWSER:
@@ -75,6 +84,15 @@ export class AutoApprove {
 				case ClineDefaultTool.APPLY_PATCH:
 				case ClineDefaultTool.BASH:
 				case ClineDefaultTool.USE_SUBAGENTS:
+				case ClineDefaultTool.NEOIDE_CREATE_AXIS:
+				case ClineDefaultTool.NEOIDE_UPDATE_AXIS:
+				case ClineDefaultTool.NEOIDE_DELETE_AXIS:
+				case ClineDefaultTool.NEOIDE_CREATE_TASK:
+				case ClineDefaultTool.NEOIDE_UPDATE_TASK:
+				case ClineDefaultTool.NEOIDE_DELETE_TASK:
+				case ClineDefaultTool.NEOIDE_SET_GLOBAL_VAR:
+				case ClineDefaultTool.NEOIDE_DELETE_GLOBAL_VAR:
+				case ClineDefaultTool.NEOIDE_COMPILE:
 					return [true, true]
 				case ClineDefaultTool.BROWSER:
 				case ClineDefaultTool.WEB_FETCH:
@@ -98,6 +116,15 @@ export class AutoApprove {
 			case ClineDefaultTool.FILE_NEW:
 			case ClineDefaultTool.FILE_EDIT:
 			case ClineDefaultTool.APPLY_PATCH:
+			case ClineDefaultTool.NEOIDE_CREATE_AXIS:
+			case ClineDefaultTool.NEOIDE_UPDATE_AXIS:
+			case ClineDefaultTool.NEOIDE_DELETE_AXIS:
+			case ClineDefaultTool.NEOIDE_CREATE_TASK:
+			case ClineDefaultTool.NEOIDE_UPDATE_TASK:
+			case ClineDefaultTool.NEOIDE_DELETE_TASK:
+			case ClineDefaultTool.NEOIDE_SET_GLOBAL_VAR:
+			case ClineDefaultTool.NEOIDE_DELETE_GLOBAL_VAR:
+			case ClineDefaultTool.NEOIDE_COMPILE:
 				return [autoApprovalSettings.actions.editFiles, autoApprovalSettings.actions.editFilesExternally ?? false]
 			case ClineDefaultTool.BASH:
 				return [

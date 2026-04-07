@@ -1,10 +1,4 @@
-import {
-	isGptOssModelFamily,
-	isGPT5ModelFamily,
-	isGPT51Model,
-	isGPT52Model,
-	isNextGenModelProvider,
-} from "@utils/model-utils"
+import { isGPT5ModelFamily, isGPT51Model, isGPT52Model, isGptOssModelFamily, isNextGenModelProvider } from "@utils/model-utils"
 import { ModelFamily } from "@/shared/prompts"
 import { Logger } from "@/shared/services/Logger"
 import { ClineDefaultTool } from "@/shared/tools"
@@ -84,6 +78,17 @@ export const config = createVariant(ModelFamily.NATIVE_GPT_5)
 		ClineDefaultTool.GENERATE_EXPLANATION,
 		ClineDefaultTool.USE_SKILL,
 		ClineDefaultTool.USE_SUBAGENTS,
+		ClineDefaultTool.NEOIDE_GET_STATUS,
+		ClineDefaultTool.NEOIDE_GET_CONFIG,
+		ClineDefaultTool.NEOIDE_CREATE_AXIS,
+		ClineDefaultTool.NEOIDE_UPDATE_AXIS,
+		ClineDefaultTool.NEOIDE_DELETE_AXIS,
+		ClineDefaultTool.NEOIDE_CREATE_TASK,
+		ClineDefaultTool.NEOIDE_UPDATE_TASK,
+		ClineDefaultTool.NEOIDE_DELETE_TASK,
+		ClineDefaultTool.NEOIDE_SET_GLOBAL_VAR,
+		ClineDefaultTool.NEOIDE_DELETE_GLOBAL_VAR,
+		ClineDefaultTool.NEOIDE_COMPILE,
 	)
 	.placeholders({
 		MODEL_FAMILY: ModelFamily.NATIVE_GPT_5,

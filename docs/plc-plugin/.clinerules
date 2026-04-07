@@ -1,0 +1,45 @@
+# NeoIDE Project Rules for Cline
+
+## 项目概述
+NeoIDE 是 VS Code 扩展，为 PLC 开发提供 IDE 功能。使用 TypeScript + tsyringe DI 框架。
+
+## 架构约束
+- **分层**：modules → core，模块间禁止横向依赖
+- **DI**：每个模块通过 `*.module.ts` 注册服务
+- **事件**：模块间通过 `PlcEventBus` 通信
+
+## 编码规范
+- **禁止 any**：使用 interface 或 unknown + 类型收窄
+- **异步 I/O**：禁止同步阻塞，使用 `fs.promises`
+- **UI/逻辑分离**：View 调用 Service，Service 调用 Repository
+
+## 模块结构
+```
+src/modules/<feature>/
+├── commands/     # VS Code 命令
+├── services/     # 业务逻辑
+├── repositories/ # 数据持久化
+├── models/       # 类型定义
+├── views/        # TreeView/Webview
+└── <feature>.module.ts  # DI 注册
+```
+
+## Extension API
+项目通过 `src/api/` 暴露公共 API：
+- `plc-api.types.ts` - 类型定义
+- `plc-api.impl.ts` - PlcIdeApiImpl 实现
+- `index.ts` - 导出入口
+
+API 方法：getProjectStatus, getPlcConfig, createAxis, updateAxis, deleteAxis, createTask, triggerCompile 等。
+
+## 关键文件
+- `AGENTS.md` - 完整项目上下文
+- `docs/ARCHITECTURE.md` - 架构设计
+- `docs/DEV_GUIDE.md` - 开发指南
+
+## 开发命令
+```bash
+npm run watch    # 开发编译
+npm run lint     # 代码检查
+npm run package  # 生产构建
+```

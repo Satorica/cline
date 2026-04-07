@@ -12,6 +12,7 @@ import { generate_explanation_variants } from "./generate_explanation"
 import { list_code_definition_names_variants } from "./list_code_definition_names"
 import { list_files_variants } from "./list_files"
 import { load_mcp_documentation_variants } from "./load_mcp_documentation"
+import { neoide_tools_variants } from "./neoide_tools"
 import { new_task_variants } from "./new_task"
 import { plan_mode_respond_variants } from "./plan_mode_respond"
 import { read_file_variants } from "./read_file"
@@ -55,6 +56,7 @@ export function registerClineToolSets(): void {
 		...web_search_variants,
 		...write_to_file_variants,
 		...apply_patch_variants,
+		...neoide_tools_variants,
 	]
 
 	// Register each variant

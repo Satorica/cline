@@ -1,0 +1,82 @@
+# NeoIDE - Cursor Rules
+
+## 角色
+你是一名高级工业软件架构师和 VS Code 扩展专家，正在为 PLC 编程构建专业 IDE。
+
+## 优先事项
+- 健壮性 > 模块化 > 性能 > 严格类型安全
+- 这是工业级桌面工具，不是简单的 Web 应用
+
+## 项目架构
+
+### 目录结构
+- **`core/`**: 基础设施、基类、共享工具（Logger, EventBus, DI Container）
+- **`modules/<feature>/`**: 自包含的业务功能模块
+
+### 模块结构
+```
+modules/<feature>/
+├── commands/     # VS Code 命令（交互层）
+├── services/     # 业务逻辑（逻辑层）
+├── repositories/ # 数据持久化（数据层）
+├── views/        # UI 组件
+│   ├── tree/     # TreeDataProvider
+│   └── webview/  # WebviewPanel
+└── <feature>.module.ts  # DI 注册入口
+```
+
+## 编码规范
+
+### TypeScript
+- **禁止 `any`**：使用 `unknown` + 类型收窄
+- **接口优先**：所有 Model 和 DTO 必须定义接口
+- **空值处理**：使用 `?.` 和 `??`
+
+### 异步与性能
+- **非阻塞**：VS Code Extension Host 是单线程的
+- **进度提示**：超过 100ms 的操作使用 `vscode.window.withProgress`
+- **异步 I/O**：使用 `fs.promises` 或 `vscode.workspace.fs`
+
+### 错误处理
+- **用户可见**：失败时通过 `vscode.window.showErrorMessage` 通知用户
+- **优雅降级**：一个模块的失败不应导致整个扩展崩溃
+
+## 领域知识
+
+- **项目标识**：`.zgcplc_project.json`
+- **通信协议**：支持 gRPC 和 RESTful 两种连接方式
+- **编译链**：ST → (MatIEC) → C → (post-tools) → C → (CMake/Ninja) → .so
+
+## 关键文件（请优先阅读）
+
+1. **`AGENTS.md`** - 完整的项目上下文和规范（最重要）
+2. **`docs/ARCHITECTURE.md`** - 架构设计文档
+3. **`docs/DEV_GUIDE.md`** - 开发指南
+4. **`src/api/`** - Extension API 层（供外部插件调用）
+
+## 响应风格
+
+- 简洁、技术性强
+- 优先考虑架构正确性
+- 如果请求违反模块化架构，发出警告并建议正确位置
+- 开始任务前阅读 `AGENTS.md` 获取最新上下文
+
+## Extension API
+
+项目通过 `src/api/` 暴露公共 API：
+
+| 方法 | 说明 |
+|---|---|
+| `getProjectStatus()` | 获取项目状态 |
+| `getPlcConfig(type)` | 获取配置 |
+| `createAxis/updateAxis/deleteAxis` | 轴配置 CRUD |
+| `createTask/updateTask/deleteTask` | 任务配置 CRUD |
+| `setGlobalVar/deleteGlobalVar` | 全局变量管理 |
+| `triggerCompile()` | 触发编译 |
+
+外部插件使用示例：
+```typescript
+const neoide = vscode.extensions.getExtension('your-publisher.neoide');
+const api = neoide.exports as PlcIdeApi;
+const status = await api.getProjectStatus();
+```
