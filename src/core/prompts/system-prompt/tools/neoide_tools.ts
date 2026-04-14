@@ -310,6 +310,100 @@ const neoide_trigger_compile: ClineToolSpec = {
 }
 
 // ---------------------------------------------------------------------------
+// neoide_create_pou
+// ---------------------------------------------------------------------------
+
+const neoide_create_pou: ClineToolSpec = {
+	variant: ModelFamily.GENERIC,
+	id: ClineDefaultTool.NEOIDE_CREATE_POU,
+	name: "neoide_create_pou",
+	description:
+		"在 NeoIDE 项目中创建新的程序组织单元（POU）。支持三种类型：" +
+		"PRG（程序）、FB（功能块）、FC（功能）。" +
+		"POU 名称必须唯一，且符合 IEC 61131-3 命名规范。" +
+		"创建后可通过 write_to_file 工具向 POU 写入 ST 代码。",
+	parameters: [
+		{
+			name: "name",
+			required: true,
+			instruction: "POU 名称，例如 MotorControl、MainProgram。必须唯一且符合 IEC 61131-3 命名规范。",
+			usage: "MotorControl",
+		},
+		{
+			name: "type",
+			required: true,
+			instruction: "POU 类型，可选值: PRG（程序）、FB（功能块）、FC（功能）。",
+			usage: "FB",
+		},
+	],
+}
+
+// ---------------------------------------------------------------------------
+// neoide_delete_pou
+// ---------------------------------------------------------------------------
+
+const neoide_delete_pou: ClineToolSpec = {
+	variant: ModelFamily.GENERIC,
+	id: ClineDefaultTool.NEOIDE_DELETE_POU,
+	name: "neoide_delete_pou",
+	description: "删除 NeoIDE 中的程序组织单元（POU）。此操作不可撤销，请谨慎使用。",
+	parameters: [
+		{
+			name: "name",
+			required: true,
+			instruction: "要删除的 POU 名称",
+			usage: "MotorControl",
+		},
+	],
+}
+
+// ---------------------------------------------------------------------------
+// neoide_update_pou
+// ---------------------------------------------------------------------------
+
+const neoide_update_pou: ClineToolSpec = {
+	variant: ModelFamily.GENERIC,
+	id: ClineDefaultTool.NEOIDE_UPDATE_POU,
+	name: "neoide_update_pou",
+	description: "更新 NeoIDE 中已存在的 POU 属性。只需传入要修改的字段，未传入的字段保持不变。",
+	parameters: [
+		{
+			name: "name",
+			required: true,
+			instruction: "要更新的 POU 名称",
+			usage: "MotorControl",
+		},
+		{
+			name: "params",
+			required: true,
+			instruction: "要更新的字段 JSON 字符串，例如修改 POU 名称、类型等。",
+			usage: '{"name":"NewMotorControl"}',
+		},
+	],
+}
+
+// ---------------------------------------------------------------------------
+// neoide_get_pou_content
+// ---------------------------------------------------------------------------
+
+const neoide_get_pou_content: ClineToolSpec = {
+	variant: ModelFamily.GENERIC,
+	id: ClineDefaultTool.NEOIDE_GET_POU_CONTENT,
+	name: "neoide_get_pou_content",
+	description:
+		"获取 NeoIDE 中指定 POU 的内容和属性信息。返回 POU 的类型、变量声明区和代码区。" +
+		"在修改 POU 代码之前，建议先调用此工具查看当前内容。",
+	parameters: [
+		{
+			name: "name",
+			required: true,
+			instruction: "要查询的 POU 名称",
+			usage: "MotorControl",
+		},
+	],
+}
+
+// ---------------------------------------------------------------------------
 // Export all variants
 // ---------------------------------------------------------------------------
 
@@ -325,4 +419,8 @@ export const neoide_tools_variants: ClineToolSpec[] = [
 	neoide_set_global_var,
 	neoide_delete_global_var,
 	neoide_trigger_compile,
+	neoide_create_pou,
+	neoide_delete_pou,
+	neoide_update_pou,
+	neoide_get_pou_content,
 ]

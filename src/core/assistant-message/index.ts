@@ -54,6 +54,26 @@ export const toolParamNames = [
 	"prompt_3",
 	"prompt_4",
 	"prompt_5",
+	// NeoIDE 特有参数
+	"config_type",
+	"name",
+	"id",
+	"device_number",
+	"master_id",
+	"slave_id",
+	"setting",
+	"servo_type",
+	"drive_type",
+	"drive_ver",
+	"params",
+	"address",
+	"data_type",
+	"init_value",
+	"comment",
+	"retain",
+	"constant",
+	// NeoIDE POU 参数
+	"type",
 ] as const
 
 export type ToolParamName = (typeof toolParamNames)[number]

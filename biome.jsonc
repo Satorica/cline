@@ -150,7 +150,8 @@
 				"!!src/extension.ts",
 				"!!src/integrations/git/commit-message-generator.ts",
 				"!!src/integrations/terminal/**",
-				"!!src/core/controller/ui/openWalkthrough.ts"
+				"!!src/core/controller/ui/openWalkthrough.ts",
+				"!!src/core/task/tools/handlers/NeoIDEToolHandler.ts"
 			],
 			"plugins": [
 				"src/dev/grit/vscode-api.grit"
@@ -181,7 +182,11 @@
 				"!!**/*.tsx",
 				"!!**/testing-platform/**",
 				// ACP mode must redirect console to stderr - this is intentional
-				"!!cli/src/acp/index.ts"
+				"!!cli/src/acp/index.ts",
+				// Debug logger is the logging infrastructure itself - direct console access intentional
+				"!!src/core/debug/logger.ts",
+				// NeoIDE handler uses console to log extension discovery - intentional diagnostics
+				"!!src/core/task/tools/handlers/NeoIDEToolHandler.ts"
 			]
 		},
 		{

@@ -1,5 +1,6 @@
 import { setTimeout as setTimeoutPromise } from "node:timers/promises"
 import { ApiHandler, ApiProviderInfo, buildApiHandler } from "@core/api"
+import { LoggingApiHandler } from "@core/api/logging-handler"
 import { ApiStream } from "@core/api/transform/stream"
 import { AssistantMessageContent, parseAssistantMessageV2, ToolUse } from "@core/assistant-message"
 import { ContextManager } from "@core/context/context-management/ContextManager"
@@ -20,6 +21,7 @@ import {
 	refreshExternalRulesToggles,
 } from "@core/context/instructions/user-instructions/external-rules"
 import { sendPartialMessageEvent } from "@core/controller/ui/subscribeToPartialMessage"
+import { isDebugMode } from "@core/debug/logger"
 import { getHookModelContext } from "@core/hooks/hook-model-context"
 import { getHooksEnabledSafe } from "@core/hooks/hooks-utils"
 import { executePreCompactHookWithCleanup, HookCancellationError, HookExecution } from "@core/hooks/precompact-executor"
@@ -465,7 +467,8 @@ export class Task {
 		const currentProvider = mode === "plan" ? apiConfiguration.planModeApiProvider : apiConfiguration.actModeApiProvider
 
 		// Now that ulid is initialized, we can build the API handler
-		this.api = buildApiHandler(effectiveApiConfiguration, mode)
+		const baseApiHandler = buildApiHandler(effectiveApiConfiguration, mode)
+		this.api = isDebugMode() ? new LoggingApiHandler(baseApiHandler, taskId) : baseApiHandler
 
 		// Set ulid on browserSession for telemetry tracking
 		this.browserSession.setUlid(this.ulid)
@@ -593,8 +596,7 @@ export class Task {
 			const lastMessage = clineMessages.at(-1)
 			const lastMessageIndex = clineMessages.length - 1
 
-			const isUpdatingPreviousPartial =
-				lastMessage && lastMessage.partial && lastMessage.type === "ask" && lastMessage.ask === type
+			const isUpdatingPreviousPartial = lastMessage?.partial && lastMessage.type === "ask" && lastMessage.ask === type
 			if (partial) {
 				if (isUpdatingPreviousPartial) {
 					// existing partial message, so update it
@@ -767,8 +769,7 @@ export class Task {
 
 		if (partial !== undefined) {
 			const lastMessage = this.messageStateHandler.getClineMessages().at(-1)
-			const isUpdatingPreviousPartial =
-				lastMessage && lastMessage.partial && lastMessage.type === "say" && lastMessage.say === type
+			const isUpdatingPreviousPartial = lastMessage?.partial && lastMessage.type === "say" && lastMessage.say === type
 			if (partial) {
 				if (isUpdatingPreviousPartial) {
 					// existing partial message, so update it
@@ -1764,6 +1765,8 @@ export class Task {
 			"- If the user request is ambiguous, resolve it toward PLC/ST implementation instead of asking generic tech-stack questions.",
 			"- Never output empty ST output pin bindings such as `Status => ,`.",
 			"- Unless explicitly requested, do not generate CONFIGURATION/RESOURCE/TASK mapping blocks because IDE tooling injects those sections.",
+			"- Remeber you have neoide tools for axis configuration and CRUD task and compile .so",
+			"- please do not edit .CONFIGS BUILD FILES, you should use neoide tools to modify them",
 		].join("\n")
 	}
 
@@ -2605,7 +2608,7 @@ export class Task {
 		await this.say(
 			"api_req_started",
 			JSON.stringify({
-				request: userContent.map((block) => formatContentBlockToMarkdown(block)).join("\n\n") + "\n\nLoading...",
+				request: `${userContent.map((block) => formatContentBlockToMarkdown(block)).join("\n\n")}\n\nLoading...`,
 			}),
 		)
 
@@ -2911,7 +2914,7 @@ export class Task {
 					// Present content once per chunk. Calling this from multiple case branches can
 					// race partial updates and duplicate text rows in the chat.
 					await this.presentAssistantMessage().catch((error) =>
-						Logger.debug("[Task] Failed to present message: " + error),
+						Logger.debug(`[Task] Failed to present message: ${error}`),
 					)
 
 					if (this.taskState.abort) {
@@ -3448,7 +3451,7 @@ export class Task {
 	private formatWorkspaceRootsSection(): string {
 		const multiRootEnabled = isMultiRootEnabled(this.stateManager)
 		const hasWorkspaceManager = !!this.workspaceManager
-		const roots = hasWorkspaceManager ? this.workspaceManager!.getRoots() : []
+		const roots = hasWorkspaceManager ? this.workspaceManager?.getRoots() : []
 
 		// Only show workspace roots if multi-root is enabled and there are multiple roots
 		if (!multiRootEnabled || roots.length <= 1) {
@@ -3465,7 +3468,7 @@ export class Task {
 		}
 
 		// Add primary workspace information
-		const primary = this.workspaceManager!.getPrimaryRoot()
+		const primary = this.workspaceManager?.getPrimaryRoot()
 		const primaryName = this.getPrimaryWorkspaceName(primary)
 		section += `\n\nPrimary workspace: ${primaryName}`
 

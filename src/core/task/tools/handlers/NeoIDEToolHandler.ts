@@ -14,12 +14,23 @@ import { ToolResultUtils } from "../utils/ToolResultUtils"
 // ---------------------------------------------------------------------------
 
 async function getNeoIdeApi(): Promise<any> {
-	const ext = vscode.extensions.getExtension("your-publisher-id.neoide")
+	const targetId = "your-publisher-id.neoide"
+
+	// 列出所有已加载插件的 ID，方便确认目标插件是否存在
+	const allIds = vscode.extensions.all.map((e) => e.id)
+	console.log(`[NeoIDE] 当前已加载的插件列表（共 ${allIds.length} 个）:`, allIds)
+
+	const ext = vscode.extensions.getExtension(targetId)
 	if (!ext) {
+		console.error(`[NeoIDE] 未找到插件 "${targetId}"。已加载插件 ID 如下，请核对拼写:\n${allIds.join("\n")}`)
 		throw new Error("NeoIDE 插件未安装或未找到。请确认 NeoIDE 已安装并启用。")
 	}
+
+	console.log(`[NeoIDE] 找到插件 "${targetId}"，isActive=${ext.isActive}`)
 	if (!ext.isActive) {
+		console.log(`[NeoIDE] 插件未激活，正在激活...`)
 		await ext.activate()
+		console.log(`[NeoIDE] 插件激活完成，exports keys:`, Object.keys(ext.exports ?? {}))
 	}
 	return ext.exports
 }
@@ -563,6 +574,185 @@ export class NeoIDECompileHandler implements IFullyManagedTool {
 			}
 			const warnCount = report.errors.filter((e: any) => e.severity === "warning").length
 			return `编译成功，耗时 ${report.duration}ms${warnCount > 0 ? `，${warnCount} 个警告` : ""}。\n输出文件: ${report.outputFiles.join(", ")}`
+		} catch (err: any) {
+			return formatResponse.toolError(err.message ?? String(err))
+		}
+	}
+}
+
+// ---------------------------------------------------------------------------
+// neoide_create_pou
+// ---------------------------------------------------------------------------
+
+export class NeoIDECreatePouHandler implements IFullyManagedTool {
+	readonly name = ClineDefaultTool.NEOIDE_CREATE_POU
+
+	getDescription(block: ToolUse): string {
+		return `[neoide_create_pou name="${block.params.name}" type="${block.params.type}"]`
+	}
+
+	async handlePartialBlock(_block: ToolUse, _uiHelpers: StronglyTypedUIHelpers): Promise<void> {}
+
+	async execute(config: TaskConfig, block: ToolUse): Promise<ToolResponse> {
+		const name: string | undefined = block.params.name
+		const type: string | undefined = block.params.type
+
+		if (!name) {
+			config.taskState.consecutiveMistakeCount++
+			return config.callbacks.sayAndCreateMissingParamError(this.name, "name")
+		}
+		if (!type) {
+			config.taskState.consecutiveMistakeCount++
+			return config.callbacks.sayAndCreateMissingParamError(this.name, "type")
+		}
+		config.taskState.consecutiveMistakeCount = 0
+
+		const validTypes = ["PRG", "FB", "FC"]
+		if (!validTypes.includes(type)) {
+			return formatResponse.toolError(`无效的 POU 类型: ${type}。可选值: ${validTypes.join(", ")}`)
+		}
+
+		const didApprove = await requireApproval(
+			ClineDefaultTool.NEOIDE_CREATE_POU,
+			name,
+			`创建 POU "${name}" (类型: ${type})`,
+			config,
+		)
+		if (!didApprove) return formatResponse.toolDenied()
+
+		try {
+			const api = await getNeoIdeApi()
+			const result = await api.createPou({ name, type })
+			if (!result.success) {
+				return formatResponse.toolError(`创建 POU 失败: ${apiError(result)}`)
+			}
+			return `POU "${result.data.name}" 创建成功 (类型: ${result.data.type}, ID: ${result.data.id})`
+		} catch (err: any) {
+			return formatResponse.toolError(err.message ?? String(err))
+		}
+	}
+}
+
+// ---------------------------------------------------------------------------
+// neoide_delete_pou
+// ---------------------------------------------------------------------------
+
+export class NeoIDEDeletePouHandler implements IFullyManagedTool {
+	readonly name = ClineDefaultTool.NEOIDE_DELETE_POU
+
+	getDescription(block: ToolUse): string {
+		return `[neoide_delete_pou name="${block.params.name}"]`
+	}
+
+	async handlePartialBlock(_block: ToolUse, _uiHelpers: StronglyTypedUIHelpers): Promise<void> {}
+
+	async execute(config: TaskConfig, block: ToolUse): Promise<ToolResponse> {
+		const name: string | undefined = block.params.name
+		if (!name) {
+			config.taskState.consecutiveMistakeCount++
+			return config.callbacks.sayAndCreateMissingParamError(this.name, "name")
+		}
+		config.taskState.consecutiveMistakeCount = 0
+
+		const didApprove = await requireApproval(
+			ClineDefaultTool.NEOIDE_DELETE_POU,
+			name,
+			`删除 POU "${name}"（此操作不可撤销）`,
+			config,
+		)
+		if (!didApprove) return formatResponse.toolDenied()
+
+		try {
+			const api = await getNeoIdeApi()
+			const result = await api.deletePou(name)
+			if (!result.success) {
+				return formatResponse.toolError(`删除 POU 失败: ${apiError(result)}`)
+			}
+			return `POU "${name}" 已删除`
+		} catch (err: any) {
+			return formatResponse.toolError(err.message ?? String(err))
+		}
+	}
+}
+
+// ---------------------------------------------------------------------------
+// neoide_update_pou
+// ---------------------------------------------------------------------------
+
+export class NeoIDEUpdatePouHandler implements IFullyManagedTool {
+	readonly name = ClineDefaultTool.NEOIDE_UPDATE_POU
+
+	getDescription(block: ToolUse): string {
+		return `[neoide_update_pou name="${block.params.name}"]`
+	}
+
+	async handlePartialBlock(_block: ToolUse, _uiHelpers: StronglyTypedUIHelpers): Promise<void> {}
+
+	async execute(config: TaskConfig, block: ToolUse): Promise<ToolResponse> {
+		const name: string | undefined = block.params.name
+		const params: string | undefined = block.params.params
+
+		if (!name) {
+			config.taskState.consecutiveMistakeCount++
+			return config.callbacks.sayAndCreateMissingParamError(this.name, "name")
+		}
+		if (!params) {
+			config.taskState.consecutiveMistakeCount++
+			return config.callbacks.sayAndCreateMissingParamError(this.name, "params")
+		}
+		config.taskState.consecutiveMistakeCount = 0
+
+		let parsedParams: object
+		try {
+			parsedParams = JSON.parse(params)
+		} catch {
+			return formatResponse.toolError("params 参数不是合法的 JSON 对象")
+		}
+
+		const didApprove = await requireApproval(ClineDefaultTool.NEOIDE_UPDATE_POU, name, `更新 POU "${name}"`, config)
+		if (!didApprove) return formatResponse.toolDenied()
+
+		try {
+			const api = await getNeoIdeApi()
+			const result = await api.updatePou(name, parsedParams)
+			if (!result.success) {
+				return formatResponse.toolError(`更新 POU 失败: ${apiError(result)}`)
+			}
+			return `POU "${name}" 更新成功`
+		} catch (err: any) {
+			return formatResponse.toolError(err.message ?? String(err))
+		}
+	}
+}
+
+// ---------------------------------------------------------------------------
+// neoide_get_pou_content
+// ---------------------------------------------------------------------------
+
+export class NeoIDEGetPouContentHandler implements IFullyManagedTool {
+	readonly name = ClineDefaultTool.NEOIDE_GET_POU_CONTENT
+
+	getDescription(block: ToolUse): string {
+		return `[neoide_get_pou_content name="${block.params.name}"]`
+	}
+
+	async handlePartialBlock(_block: ToolUse, _uiHelpers: StronglyTypedUIHelpers): Promise<void> {}
+
+	async execute(config: TaskConfig, block: ToolUse): Promise<ToolResponse> {
+		const name: string | undefined = block.params.name
+		if (!name) {
+			config.taskState.consecutiveMistakeCount++
+			return config.callbacks.sayAndCreateMissingParamError(this.name, "name")
+		}
+		config.taskState.consecutiveMistakeCount = 0
+
+		try {
+			const api = await getNeoIdeApi()
+			const result = await api.getPouContent(name)
+			if (!result.success) {
+				return formatResponse.toolError(`获取 POU 内容失败: ${apiError(result)}`)
+			}
+			return `POU "${name}" 内容:\n${JSON.stringify(result.data, null, 2)}`
 		} catch (err: any) {
 			return formatResponse.toolError(err.message ?? String(err))
 		}

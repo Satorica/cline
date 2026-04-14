@@ -17,14 +17,18 @@ import { LoadMcpDocumentationHandler } from "./handlers/LoadMcpDocumentationHand
 import {
 	NeoIDECompileHandler,
 	NeoIDECreateAxisHandler,
+	NeoIDECreatePouHandler,
 	NeoIDECreateTaskHandler,
 	NeoIDEDeleteAxisHandler,
 	NeoIDEDeleteGlobalVarHandler,
+	NeoIDEDeletePouHandler,
 	NeoIDEDeleteTaskHandler,
 	NeoIDEGetConfigHandler,
+	NeoIDEGetPouContentHandler,
 	NeoIDEGetStatusHandler,
 	NeoIDESetGlobalVarHandler,
 	NeoIDEUpdateAxisHandler,
+	NeoIDEUpdatePouHandler,
 	NeoIDEUpdateTaskHandler,
 } from "./handlers/NeoIDEToolHandler"
 import { NewTaskHandler } from "./handlers/NewTaskHandler"
@@ -131,6 +135,11 @@ export class ToolExecutorCoordinator {
 		[ClineDefaultTool.NEOIDE_SET_GLOBAL_VAR]: (_v: ToolValidator) => new NeoIDESetGlobalVarHandler(),
 		[ClineDefaultTool.NEOIDE_DELETE_GLOBAL_VAR]: (_v: ToolValidator) => new NeoIDEDeleteGlobalVarHandler(),
 		[ClineDefaultTool.NEOIDE_COMPILE]: (_v: ToolValidator) => new NeoIDECompileHandler(),
+		// NeoIDE POU tools
+		[ClineDefaultTool.NEOIDE_CREATE_POU]: (_v: ToolValidator) => new NeoIDECreatePouHandler(),
+		[ClineDefaultTool.NEOIDE_DELETE_POU]: (_v: ToolValidator) => new NeoIDEDeletePouHandler(),
+		[ClineDefaultTool.NEOIDE_UPDATE_POU]: (_v: ToolValidator) => new NeoIDEUpdatePouHandler(),
+		[ClineDefaultTool.NEOIDE_GET_POU_CONTENT]: (_v: ToolValidator) => new NeoIDEGetPouContentHandler(),
 	}
 
 	/**

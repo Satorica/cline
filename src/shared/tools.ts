@@ -45,6 +45,11 @@ export enum ClineDefaultTool {
 	NEOIDE_SET_GLOBAL_VAR = "neoide_set_global_var",
 	NEOIDE_DELETE_GLOBAL_VAR = "neoide_delete_global_var",
 	NEOIDE_COMPILE = "neoide_trigger_compile",
+	// NeoIDE POU tools
+	NEOIDE_CREATE_POU = "neoide_create_pou",
+	NEOIDE_DELETE_POU = "neoide_delete_pou",
+	NEOIDE_UPDATE_POU = "neoide_update_pou",
+	NEOIDE_GET_POU_CONTENT = "neoide_get_pou_content",
 }
 
 // Array of all tool names for compatibility
@@ -78,4 +83,5 @@ export const READ_ONLY_TOOLS = [
 	ClineDefaultTool.USE_SUBAGENTS,
 	ClineDefaultTool.NEOIDE_GET_STATUS,
 	ClineDefaultTool.NEOIDE_GET_CONFIG,
+	ClineDefaultTool.NEOIDE_GET_POU_CONTENT,
 ] as const

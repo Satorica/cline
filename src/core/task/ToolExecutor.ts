@@ -1,5 +1,6 @@
 import { ApiHandler } from "@core/api"
 import { FileContextTracker } from "@core/context/context-tracking/FileContextTracker"
+import { logToolRegistration } from "@core/debug/logger"
 import { getHookModelContext } from "@core/hooks/hook-model-context"
 import { getHooksEnabledSafe } from "@core/hooks/hooks-utils"
 import { ClineIgnoreController } from "@core/ignore/ClineIgnoreController"
@@ -199,10 +200,19 @@ export class ToolExecutor {
 	 */
 	private registerToolHandlers(): void {
 		const validator = new ToolValidator(this.clineIgnoreController)
-		// Register all tools via toolUseNames
+		const registered: string[] = []
+		const skipped: string[] = []
+
 		for (const tool of toolUseNames) {
 			this.coordinator.registerByName(tool, validator)
+			if (this.coordinator.has(tool)) {
+				registered.push(tool)
+			} else {
+				skipped.push(tool)
+			}
 		}
+
+		logToolRegistration(this.taskId, registered, skipped)
 	}
 
 	/**

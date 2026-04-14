@@ -85,6 +85,10 @@ export const config = createVariant(ModelFamily.GENERIC)
 		ClineDefaultTool.NEOIDE_SET_GLOBAL_VAR,
 		ClineDefaultTool.NEOIDE_DELETE_GLOBAL_VAR,
 		ClineDefaultTool.NEOIDE_COMPILE,
+		ClineDefaultTool.NEOIDE_CREATE_POU,
+		ClineDefaultTool.NEOIDE_DELETE_POU,
+		ClineDefaultTool.NEOIDE_UPDATE_POU,
+		ClineDefaultTool.NEOIDE_GET_POU_CONTENT,
 	)
 	.placeholders({
 		MODEL_FAMILY: "generic",

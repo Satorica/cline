@@ -61,6 +61,9 @@ export class AutoApprove {
 				case ClineDefaultTool.NEOIDE_SET_GLOBAL_VAR:
 				case ClineDefaultTool.NEOIDE_DELETE_GLOBAL_VAR:
 				case ClineDefaultTool.NEOIDE_COMPILE:
+				case ClineDefaultTool.NEOIDE_CREATE_POU:
+				case ClineDefaultTool.NEOIDE_DELETE_POU:
+				case ClineDefaultTool.NEOIDE_UPDATE_POU:
 					return [true, true]
 
 				case ClineDefaultTool.BROWSER:
@@ -93,6 +96,9 @@ export class AutoApprove {
 				case ClineDefaultTool.NEOIDE_SET_GLOBAL_VAR:
 				case ClineDefaultTool.NEOIDE_DELETE_GLOBAL_VAR:
 				case ClineDefaultTool.NEOIDE_COMPILE:
+				case ClineDefaultTool.NEOIDE_CREATE_POU:
+				case ClineDefaultTool.NEOIDE_DELETE_POU:
+				case ClineDefaultTool.NEOIDE_UPDATE_POU:
 					return [true, true]
 				case ClineDefaultTool.BROWSER:
 				case ClineDefaultTool.WEB_FETCH:
@@ -125,6 +131,9 @@ export class AutoApprove {
 			case ClineDefaultTool.NEOIDE_SET_GLOBAL_VAR:
 			case ClineDefaultTool.NEOIDE_DELETE_GLOBAL_VAR:
 			case ClineDefaultTool.NEOIDE_COMPILE:
+			case ClineDefaultTool.NEOIDE_CREATE_POU:
+			case ClineDefaultTool.NEOIDE_DELETE_POU:
+			case ClineDefaultTool.NEOIDE_UPDATE_POU:
 				return [autoApprovalSettings.actions.editFiles, autoApprovalSettings.actions.editFilesExternally ?? false]
 			case ClineDefaultTool.BASH:
 				return [

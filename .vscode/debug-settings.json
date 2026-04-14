@@ -1,0 +1,11 @@
+{
+	"cline.debug.enabled": true,
+	"cline.debug.logLevel": "debug",
+	"cline.debug.logDirectory": "./logs",
+	"cline.debug.includeRawRequests": true,
+	"cline.debug.includeRawResponses": true,
+	"cline.debug.includeAgentContext": true,
+	"cline.debug.includeToolMetadata": true,
+	"cline.debug.maxLogFileSize": 10,
+	"cline.debug.compressOldLogs": true
+}

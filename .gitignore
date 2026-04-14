@@ -51,3 +51,15 @@ test-results
 
 # Smoke test results (generated)
 evals/smoke-tests/results/
+
+# Debug test scripts (local only)
+test-debug.ts
+test-debug.js
+test-compile.js
+simple-debug.js
+simulate-debug.js
+debug-init.js
+
+# Runtime debug logs
+logs/
+
