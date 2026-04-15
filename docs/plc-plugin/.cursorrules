@@ -68,15 +68,18 @@ modules/<feature>/
 | 方法 | 说明 |
 |---|---|
 | `getProjectStatus()` | 获取项目状态 |
-| `getPlcConfig(type)` | 获取配置 |
+| `getPlcConfig(type)` | 获取配置（Axis/Task/GlobalVar/IO/Pou） |
 | `createAxis/updateAxis/deleteAxis` | 轴配置 CRUD |
 | `createTask/updateTask/deleteTask` | 任务配置 CRUD |
 | `setGlobalVar/deleteGlobalVar` | 全局变量管理 |
+| `createPou/deletePou` | POU 创建与删除（⚠️ 无 updatePou API） |
 | `triggerCompile()` | 触发编译 |
+
+> **POU 更新说明**: API 层不提供 `updatePou`。创建 POU 后，ST 代码保存在 `PROGRAMS/<name>.st` 文件中，通过 `getPlcConfig('Pou')` 获取 `ProgramBlock.path` 后直接读写该文件。
 
 外部插件使用示例：
 ```typescript
-const neoide = vscode.extensions.getExtension('your-publisher.neoide');
+const neoide = vscode.extensions.getExtension('undefined_publisher.neoide');
 const api = neoide.exports as PlcIdeApi;
 const status = await api.getProjectStatus();
 ```

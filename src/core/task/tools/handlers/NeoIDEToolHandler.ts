@@ -1,5 +1,6 @@
 import type { ToolUse } from "@core/assistant-message"
 import { formatResponse } from "@core/prompts/responses"
+import * as path from "path"
 import * as vscode from "vscode"
 import { ClineDefaultTool } from "@/shared/tools"
 import type { ToolResponse } from "../../index"
@@ -14,7 +15,7 @@ import { ToolResultUtils } from "../utils/ToolResultUtils"
 // ---------------------------------------------------------------------------
 
 async function getNeoIdeApi(): Promise<any> {
-	const targetId = "your-publisher-id.neoide"
+	const targetId = "undefined_publisher.neoide"
 
 	// 列出所有已加载插件的 ID，方便确认目标插件是否存在
 	const allIds = vscode.extensions.all.map((e) => e.id)
@@ -690,35 +691,53 @@ export class NeoIDEUpdatePouHandler implements IFullyManagedTool {
 
 	async execute(config: TaskConfig, block: ToolUse): Promise<ToolResponse> {
 		const name: string | undefined = block.params.name
-		const params: string | undefined = block.params.params
+		const stCode: string | undefined = block.params.st_code
 
 		if (!name) {
 			config.taskState.consecutiveMistakeCount++
 			return config.callbacks.sayAndCreateMissingParamError(this.name, "name")
 		}
-		if (!params) {
+		if (stCode === undefined || stCode === "") {
 			config.taskState.consecutiveMistakeCount++
-			return config.callbacks.sayAndCreateMissingParamError(this.name, "params")
+			return config.callbacks.sayAndCreateMissingParamError(this.name, "st_code")
 		}
 		config.taskState.consecutiveMistakeCount = 0
 
-		let parsedParams: object
-		try {
-			parsedParams = JSON.parse(params)
-		} catch {
-			return formatResponse.toolError("params 参数不是合法的 JSON 对象")
-		}
-
-		const didApprove = await requireApproval(ClineDefaultTool.NEOIDE_UPDATE_POU, name, `更新 POU "${name}"`, config)
+		const didApprove = await requireApproval(
+			ClineDefaultTool.NEOIDE_UPDATE_POU,
+			name,
+			`更新 POU "${name}" 的 ST 代码`,
+			config,
+		)
 		if (!didApprove) return formatResponse.toolDenied()
 
 		try {
 			const api = await getNeoIdeApi()
-			const result = await api.updatePou(name, parsedParams)
-			if (!result.success) {
-				return formatResponse.toolError(`更新 POU 失败: ${apiError(result)}`)
+
+			// 通过 getPlcConfig 获取 POU 列表，找到对应的文件路径
+			const listResult = await api.getPlcConfig("Pou")
+			if (!listResult.success) {
+				return formatResponse.toolError(`获取 POU 列表失败: ${apiError(listResult)}`)
 			}
-			return `POU "${name}" 更新成功`
+			const pou = (listResult.data as any[])?.find((p: any) => p.name === name)
+			if (!pou) {
+				return formatResponse.toolError(`POU "${name}" 不存在`)
+			}
+			if (!pou.path) {
+				return formatResponse.toolError(`POU "${name}" 的文件路径为空，无法写入`)
+			}
+
+			// 解析文件路径（绝对路径直接使用，相对路径相对工作区根目录）
+			const workspaceFolder = vscode.workspace.workspaceFolders?.[0]
+			if (!workspaceFolder) {
+				return formatResponse.toolError("没有打开的工作区，无法定位 ST 文件")
+			}
+			const fileUri = path.isAbsolute(pou.path)
+				? vscode.Uri.file(pou.path)
+				: vscode.Uri.joinPath(workspaceFolder.uri, pou.path)
+
+			await vscode.workspace.fs.writeFile(fileUri, Buffer.from(stCode, "utf-8"))
+			return `POU "${name}" ST 代码已更新（路径: ${pou.path}）`
 		} catch (err: any) {
 			return formatResponse.toolError(err.message ?? String(err))
 		}
@@ -748,11 +767,33 @@ export class NeoIDEGetPouContentHandler implements IFullyManagedTool {
 
 		try {
 			const api = await getNeoIdeApi()
-			const result = await api.getPouContent(name)
-			if (!result.success) {
-				return formatResponse.toolError(`获取 POU 内容失败: ${apiError(result)}`)
+
+			// 通过 getPlcConfig 获取 POU 列表，找到对应的文件路径
+			const listResult = await api.getPlcConfig("Pou")
+			if (!listResult.success) {
+				return formatResponse.toolError(`获取 POU 列表失败: ${apiError(listResult)}`)
 			}
-			return `POU "${name}" 内容:\n${JSON.stringify(result.data, null, 2)}`
+			const pou = (listResult.data as any[])?.find((p: any) => p.name === name)
+			if (!pou) {
+				return formatResponse.toolError(`POU "${name}" 不存在`)
+			}
+			if (!pou.path) {
+				return formatResponse.toolError(`POU "${name}" 的文件路径为空，无法读取`)
+			}
+
+			// 解析文件路径（绝对路径直接使用，相对路径相对工作区根目录）
+			const workspaceFolder = vscode.workspace.workspaceFolders?.[0]
+			if (!workspaceFolder) {
+				return formatResponse.toolError("没有打开的工作区，无法定位 ST 文件")
+			}
+			const fileUri = path.isAbsolute(pou.path)
+				? vscode.Uri.file(pou.path)
+				: vscode.Uri.joinPath(workspaceFolder.uri, pou.path)
+
+			const bytes = await vscode.workspace.fs.readFile(fileUri)
+			const content = Buffer.from(bytes).toString("utf-8")
+
+			return `POU "${name}" (类型: ${pou.type}, ID: ${pou.id}, 路径: ${pou.path}, 行数: ${pou.lines}):\n\`\`\`st\n${content}\n\`\`\``
 		} catch (err: any) {
 			return formatResponse.toolError(err.message ?? String(err))
 		}

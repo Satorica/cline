@@ -74,6 +74,7 @@ export const toolParamNames = [
 	"constant",
 	// NeoIDE POU 参数
 	"type",
+	"st_code",
 ] as const
 
 export type ToolParamName = (typeof toolParamNames)[number]

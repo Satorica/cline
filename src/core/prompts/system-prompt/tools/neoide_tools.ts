@@ -321,7 +321,8 @@ const neoide_create_pou: ClineToolSpec = {
 		"在 NeoIDE 项目中创建新的程序组织单元（POU）。支持三种类型：" +
 		"PRG（程序）、FB（功能块）、FC（功能）。" +
 		"POU 名称必须唯一，且符合 IEC 61131-3 命名规范。" +
-		"创建后可通过 write_to_file 工具向 POU 写入 ST 代码。",
+		"创建后会在项目 PROGRAMS/ 目录下自动生成骨架 .st 文件，" +
+		"使用 neoide_update_pou 向该 POU 写入完整的 ST 代码。",
 	parameters: [
 		{
 			name: "name",
@@ -365,7 +366,9 @@ const neoide_update_pou: ClineToolSpec = {
 	variant: ModelFamily.GENERIC,
 	id: ClineDefaultTool.NEOIDE_UPDATE_POU,
 	name: "neoide_update_pou",
-	description: "更新 NeoIDE 中已存在的 POU 属性。只需传入要修改的字段，未传入的字段保持不变。",
+	description:
+		"直接将完整的 ST 代码写入 NeoIDE 中已存在的 POU 文件。" +
+		"会覆盖 POU 的全部源代码，建议先用 neoide_get_pou_content 读取当前内容后再修改。",
 	parameters: [
 		{
 			name: "name",
@@ -374,10 +377,10 @@ const neoide_update_pou: ClineToolSpec = {
 			usage: "MotorControl",
 		},
 		{
-			name: "params",
+			name: "st_code",
 			required: true,
-			instruction: "要更新的字段 JSON 字符串，例如修改 POU 名称、类型等。",
-			usage: '{"name":"NewMotorControl"}',
+			instruction: "要写入的完整 ST 代码字符串，必须包含合法的 PROGRAM / FUNCTION_BLOCK / FUNCTION 块结构。",
+			usage: "PROGRAM MotorControl\nVAR\n  enable : BOOL;\nEND_VAR\n\nEND_PROGRAM",
 		},
 	],
 }
@@ -391,8 +394,9 @@ const neoide_get_pou_content: ClineToolSpec = {
 	id: ClineDefaultTool.NEOIDE_GET_POU_CONTENT,
 	name: "neoide_get_pou_content",
 	description:
-		"获取 NeoIDE 中指定 POU 的内容和属性信息。返回 POU 的类型、变量声明区和代码区。" +
-		"在修改 POU 代码之前，建议先调用此工具查看当前内容。",
+		"读取 NeoIDE 中指定 POU 对应的 .st 源文件内容。" +
+		"返回 POU 的元数据（类型、ID、文件路径、行数）及完整的原始 ST 代码。" +
+		"在调用 neoide_update_pou 修改代码前，建议先用此工具读取当前内容。",
 	parameters: [
 		{
 			name: "name",

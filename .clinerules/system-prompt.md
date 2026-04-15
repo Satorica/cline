@@ -49,7 +49,7 @@ When target_format = "st":
 - Generate a complete ST file with:
   1) TYPE/CONSTANT section (optional)
   2) PROGRAM <UserSpecifiedProgramName>
-  3) VAR / VAR_EXTERNAL / VAR_IN_OUT as needed
+  3) VAR / VAR_IN_OUT as needed (AXIS_REF handles go in VAR with integer initializers)
   4) FB invocation region (power/admin first, then motion commands, then status aggregation)
   5) END_PROGRAM
   6) Optional CONFIGURATION/RESOURCE/TASK block only if user requests runtime mapping in same file
@@ -60,28 +60,51 @@ When target_format = "st":
   Generate only the program-level ST body (PROGRAM, VAR*, FB calls, END_PROGRAM), unless the user explicitly requests the mapping block in the same output.
 
 [Auto-Check NeoIDE Tool Calls After ST Code Generation]
-After every ST code generation, automatically run the following checks without waiting for user prompts:
+After every ST code generation, automatically run the following checks **in strict order** without waiting for user prompts:
 
-1. POU check:
+**Step 1 — Axis check/create (FIRST)**
+   - Scan all AXIS_REF variable names declared in VAR of the generated code.
+   - For each axis name, call neoide_get_plc_config (config_type=Axis) to confirm whether the axis already exists.
+   - If it does not exist, call neoide_create_axis to create it (confirm required parameters with the user first).
+   - Complete ALL axis creation before proceeding to Step 2.
+
+**Step 2 — POU check/create (SECOND)**
    - Extract the PROGRAM name from the generated ST code (e.g., `PROGRAM MotorControl`).
    - Call neoide_get_pou_content with that name to check whether the POU already exists.
    - If it does not exist, call neoide_create_pou with type="PRG" to create it first.
    - After confirming the POU exists, write the ST file (filename must match PROGRAM name, e.g., MotorControl.st).
 
-2. Axis check:
-   - Scan all AXIS_REF variable names declared in VAR_EXTERNAL of the generated code.
-   - For each axis name, call neoide_get_plc_config (config_type=Axis) to confirm whether the axis already exists.
-   - If it does not exist, call neoide_create_axis to create it (confirm required parameters with the user first).
-
-3. Task check:
+**Step 3 — Task check/create with pouCalls (THIRD)**
    - Call neoide_get_plc_config (config_type=Task) to confirm at least one IEC_TASK exists.
-   - If no task exists, call neoide_create_task to create a default cyclic task (periodUs=1000, priority=10).
+   - If no task exists, call neoide_create_task to create a default cyclic task (periodUs=1000, priority=10) **and immediately include the POU(s) created in Step 2 in the `pouCalls` array**:
+     ```
+     neoide_create_task({
+       periodUs: 1000,
+       priority: 10,
+       pouCalls: [
+         { num: 1, pou_name: "<PROGRAM name from Step 2>", instance_name: "<PROGRAM name>_inst" }
+       ]
+     })
+     ```
+   - If a task already exists, check whether the POU from Step 2 is already present in its `pouCalls`.
+     If NOT present, call neoide_update_task with the merged pouCalls array (existing entries + new POU appended):
+     ```
+     // get existing task
+     const task = (await neoide_get_plc_config('Task')).data[0];
+     // append new POU
+     neoide_update_task(task.id, {
+       pouCalls: [
+         ...(task.pouCalls ?? []),
+         { num: (task.pouCalls?.length ?? 0) + 1, pou_name: "<PROGRAM name>", instance_name: "<PROGRAM name>_inst" }
+       ]
+     })
+     ```
 
 4. Items NOT yet checked (APIs not ready — extend later):
    - IO configuration: add once neoide_set_io API is available.
 
-Execution order: ST code generated → POU check/create → write ST file → axis check/create → task check/create → compile (if requested by user).
-If all configurations already exist, skip silently without producing redundant output.
+Execution order: ST code generated → **Axis check/create** → **POU check/create** → write ST file → **Task check/create (with pouCalls)** → compile (if requested by user).
+If all configurations already exist and the POU is already in task's pouCalls, skip silently without producing redundant output.
 
 [POU Management Rules]
 - Before modifying an existing POU's code, call neoide_get_pou_content first to read current content.
@@ -91,16 +114,28 @@ If all configurations already exist, skip silently without producing redundant o
 - Supported POU types: PRG (program), FB (function block), FC (function).
 - POU names must be unique in the project and follow IEC 61131-3 naming conventions.
 
-[Temporary: NeoIDE Built-in FB Support Limitation]
-The current NeoIDE built-in plugin ONLY supports the following two function blocks:
+[NeoIDE Built-in FB Support]
+The current NeoIDE built-in plugin supports the following function blocks:
+
+Motion control:
 - MC_Power
 - MC_MoveVelocity
+- MC_Halt
+- MC_MoveAbsolute
+- MC_MoveRelative
+- MC_MoveAdditive
+- MC_Stop
+- MC_Reset
+- MC_Home
 
-All other PLCopen Part 1 FBs (MC_MoveAbsolute, MC_MoveRelative, MC_Stop, MC_Homing, etc.) are NOT yet supported by the built-in plugin. This limitation is expected to be lifted soon.
+Status / diagnostics:
+- MC_ReadActualPosition
+- MC_ReadActualTorque
+- MC_ReadActualVelocity
+- MC_ReadAxisError
+- MC_ReadStatus
 
-Behavior required in current demo/presentation scenarios:
-- By default, only generate code using MC_Power + MC_MoveVelocity.
-- If the user explicitly requests other FBs, first state that the current built-in plugin does not support that FB and ask whether to generate anyway (code can be written but cannot run through the built-in plugin yet).
+Use any of the above FBs freely based on user requirements. If the user requests an FB not in this list, inform them it is not yet supported and ask whether to generate the code anyway (cannot run through built-in plugin).
 
 [Temporary: No AT Address in VAR / VAR_EXTERNAL]
 The current NeoIDE IDE has a compatibility issue with AT address specifiers that causes IDE errors.
@@ -136,16 +171,48 @@ The matiec compiler requires a trailing semicolon after all structural end-keywo
 NEVER emit a bare end-keyword without a trailing `;` in any ST output. Missing semicolons are compile errors on this toolchain.
 
 [Part 2.3: Axis Variable Placement Rule]
-All AXIS_REF variables (axis handles) MUST be declared in the VAR_EXTERNAL section, not VAR.
-The IDE plugin injects the physical axis binding at runtime; the program must reference it as an external global.
+All AXIS_REF variables (axis handles) MUST be declared in the VAR section with a numeric handle assignment.
+The axis handle integer (starting from 1) is passed directly as the initializer; no VAR_EXTERNAL or IDE injection is used.
 
 Correct pattern:
-  VAR_EXTERNAL
-      Axis1 : AXIS_REF;  (* axis handle injected by IDE *)
+  VAR
+      Axis1 : AXIS_REF := 1;  (* axis handle, integer index starting from 1 *)
+      Axis2 : AXIS_REF := 2;
   END_VAR
 
-NEVER declare AXIS_REF in a plain VAR block.
-If multiple axes are needed, list each in the same VAR_EXTERNAL block.
+NEVER declare AXIS_REF in a VAR_EXTERNAL block.
+Each axis must have a unique integer initializer (1, 2, 3 …).
+If multiple axes are needed, list each in the same VAR block with consecutive handle values.
+
+Reference example (single-axis, multiple FBs):
+
+  PROGRAM main
+  VAR
+      Axis1 : AXIS_REF := 1;
+      PowerFB1 : MC_Power;
+      MoveFB1 : MC_MoveVelocity;
+      HomeFB1 : MC_Home;
+      AbsoluteFB1 : MC_MoveAbsolute;
+      HaltFB1 : MC_Halt;
+      ResetFB1 : MC_Reset;
+      e1 : BOOL;
+      EnableMoveVel : BOOL;
+      EnableHome : BOOL;
+      EnableMoveAbsolute1 : BOOL;
+      EnableHalt : BOOL;
+      EnableReset : BOOL;
+  END_VAR
+
+  (* 使能轴电源 *)
+  PowerFB1(AXIS := Axis1, Enable := e1, EnablePositive := TRUE, EnableNegative := TRUE);
+  (* 执行速度运动 *)
+  MoveFB1(AXIS := Axis1, Execute := EnableMoveVel, Velocity := 20.0, Acceleration := 10.0, Deceleration := 10.0, Jerk := 5.0);
+  HomeFB1(AXIS := Axis1, Execute := EnableHome, Position := 0.0, BufferMode := 1);
+  AbsoluteFB1(AXIS := Axis1, Execute := EnableMoveAbsolute1, Position := 300.0, Velocity := 300.0, Acceleration := 1000.0, Deceleration := 1000.0, Jerk := 500.0, Direction := 1, BufferMode := 0);
+  HaltFB1(AXIS := Axis1, Execute := EnableHalt, Deceleration := 20.0, Jerk := 10.0, BufferMode := 1);
+  ResetFB1(AXIS := Axis1, Execute := EnableReset);
+
+  END_PROGRAM
 
 [Part 2.4: PLCopen Part 1 FB Contract Verification — MANDATORY SKILL QUERY]
 Before writing any FB call, you MUST query the complete pin specification for that FB using the query-plcopen-part1 skill:

@@ -3451,7 +3451,7 @@ export class Task {
 	private formatWorkspaceRootsSection(): string {
 		const multiRootEnabled = isMultiRootEnabled(this.stateManager)
 		const hasWorkspaceManager = !!this.workspaceManager
-		const roots = hasWorkspaceManager ? this.workspaceManager?.getRoots() : []
+		const roots = (hasWorkspaceManager ? this.workspaceManager?.getRoots() : undefined) ?? []
 
 		// Only show workspace roots if multi-root is enabled and there are multiple roots
 		if (!multiRootEnabled || roots.length <= 1) {
